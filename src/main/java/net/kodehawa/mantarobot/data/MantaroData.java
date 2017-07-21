@@ -46,13 +46,13 @@ public class MantaroData {
         return exec;
     }
 
-    public static void queue(Callable<?> action) {
-        MantaroBot.getInstance().getStatsClient().increment("database_hits");
-        getExecutor().submit(action);
-    }
+	public static void queue(Callable<?> action) {
 
-    public static void queue(Runnable runnable) {
-        MantaroBot.getInstance().getStatsClient().increment("database_hits");
-        getExecutor().submit(runnable);
-    }
+		getExecutor().submit(action);
+	}
+
+	public static void queue(Runnable runnable) {
+
+		getExecutor().submit(runnable);
+	}
 }

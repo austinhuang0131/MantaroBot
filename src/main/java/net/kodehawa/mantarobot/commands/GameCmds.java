@@ -26,7 +26,7 @@ import java.util.LinkedList;
 public class GameCmds {
 
     @Subscribe
-    public static void guess(CommandRegistry cr) {
+    public void guess(CommandRegistry cr) {
         cr.register("game", new SimpleCommand(Category.GAMES) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -61,7 +61,7 @@ public class GameCmds {
     }
 
     @Subscribe
-    public static void trivia(CommandRegistry cr) {
+    public void trivia(CommandRegistry cr) {
         cr.register("trivia", new SimpleCommand(Category.GAMES) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -78,7 +78,7 @@ public class GameCmds {
         });
     }
 
-    private static void startGame(Game game, GuildMessageReceivedEvent event) {
+    private void startGame(Game game, GuildMessageReceivedEvent event) {
         if (GameLobby.LOBBYS.containsKey(event.getChannel())) {
             event.getChannel().sendMessage(EmoteReference.ERROR + "Cannot start a new game when there is a game currently running.").queue();
             return;
@@ -91,7 +91,7 @@ public class GameCmds {
         map.put(event.getMember(), MantaroData.db().getUser(event.getMember()));
 
 
-        if(!event.getMessage().getMentionedRoles().isEmpty()){
+        if(!event.getMessage().getMentionedRoles().isEmpty()) {
             StringBuilder b = new StringBuilder();
             event.getMessage().getMentionedRoles().forEach(role ->
                 event.getGuild().getMembersWithRoles(role).forEach(user  -> {

@@ -27,7 +27,6 @@ import net.kodehawa.mantarobot.commands.currency.RateLimiter;
 import net.kodehawa.mantarobot.commands.custom.EmbedJSON;
 import net.kodehawa.mantarobot.commands.info.GuildStatsManager;
 import net.kodehawa.mantarobot.commands.info.GuildStatsManager.LoggedEvent;
-import net.kodehawa.mantarobot.commands.moderation.ModLog;
 import net.kodehawa.mantarobot.core.LoadState;
 import net.kodehawa.mantarobot.core.ShardMonitorEvent;
 import net.kodehawa.mantarobot.core.listeners.command.CommandListener;
@@ -36,7 +35,6 @@ import net.kodehawa.mantarobot.db.entities.GuildData;
 import net.kodehawa.mantarobot.db.entities.Marriage;
 import net.kodehawa.mantarobot.db.entities.helpers.ExtraGuildData;
 import net.kodehawa.mantarobot.db.entities.helpers.ExtraUserData;
-import net.kodehawa.mantarobot.log.LogUtils;
 import net.kodehawa.mantarobot.shard.MantaroShard;
 import net.kodehawa.mantarobot.utils.SentryHelper;
 import net.kodehawa.mantarobot.utils.commands.EmoteReference;
@@ -175,7 +173,7 @@ public class MantaroListener implements EventListener {
             onException((ExceptionEvent) event);
         }
 
-        if(event instanceof HttpRequestEvent){
+        if(event instanceof HttpRequestEvent) {
             onHttpRequest((HttpRequestEvent) event);
         }
     }
@@ -200,7 +198,7 @@ public class MantaroListener implements EventListener {
     {
         MantaroBot.getInstance().getStatsClient().incrementCounter("http_requests");
         try{
-            if(!event.getResponse().isOk()){
+            if(!event.getResponse().isOk()) {
                 System.out.println("--------------------");
                 System.out.println("HTTP Request");
                 System.out.println(event.getRoute().getMethod() + " /" + event.getRoute().getCompiledRoute());
@@ -212,7 +210,7 @@ public class MantaroListener implements EventListener {
                         .withText(event.getRoute().getMethod() + " /" + event.getRoute().getCompiledRoute() + " | Response code: " + event.getResponseRaw().code())
                         .withDate(new Date()).build());
             }
-        } catch (Exception e){}
+        } catch (Exception e) {}
     }
 
     private void logDelete(GuildMessageDeleteEvent event) {
@@ -227,11 +225,11 @@ public class MantaroListener implements EventListener {
 
 
                 if (deletedMessage != null && !deletedMessage.getContent().isEmpty() && !event.getChannel().getId().equals(logChannel) && !deletedMessage.getAuthor().getId().equals(event.getJDA().getSelfUser().getId())) {
-                    if(MantaroData.db().getGuild(event.getGuild()).getData().getModlogBlacklistedPeople().contains(deletedMessage.getAuthor().getId())){
+                    if(MantaroData.db().getGuild(event.getGuild()).getData().getModlogBlacklistedPeople().contains(deletedMessage.getAuthor().getId())) {
                         return;
                     }
 
-                    if(MantaroData.db().getGuild(event.getGuild()).getData().getLogExcludedChannels().contains(deletedMessage.getChannel().getId())){
+                    if(MantaroData.db().getGuild(event.getGuild()).getData().getLogExcludedChannels().contains(deletedMessage.getChannel().getId())) {
                         return;
                     }
 
@@ -259,11 +257,11 @@ public class MantaroListener implements EventListener {
 
                 if (editedMessage != null && !editedMessage.getContent().isEmpty()&& !event.getChannel().getId().equals(logChannel)) {
 
-                    if(MantaroData.db().getGuild(event.getGuild()).getData().getLogExcludedChannels().contains(editedMessage.getChannel().getId())){
+                    if(MantaroData.db().getGuild(event.getGuild()).getData().getLogExcludedChannels().contains(editedMessage.getChannel().getId())) {
                         return;
                     }
 
-                    if(MantaroData.db().getGuild(event.getGuild()).getData().getModlogBlacklistedPeople().contains(editedMessage.getAuthor().getId())){
+                    if(MantaroData.db().getGuild(event.getGuild()).getData().getModlogBlacklistedPeople().contains(editedMessage.getAuthor().getId())) {
                         return;
                     }
 
@@ -284,23 +282,23 @@ public class MantaroListener implements EventListener {
         JDA jda = event.getJDA();
         if (jda.getShardInfo() == null) return;
 
-        if(event.getStatus().equals(JDA.Status.CONNECTED)){
+        if(event.getStatus().equals(JDA.Status.CONNECTED)) {
             MantaroBot.getInstance().getStatsClient().increment("shard.connect");
             MantaroBot.getInstance().getStatsClient().recordEvent(com.timgroup.statsd.Event.builder().withTitle("shard.connected")
                     .withText("Shard connected")
                     .withDate(new Date()).build());
         }
 
-        if(event.getStatus().equals(JDA.Status.ATTEMPTING_TO_RECONNECT)){
+        if(event.getStatus().equals(JDA.Status.ATTEMPTING_TO_RECONNECT)) {
             MantaroBot.getInstance().getStatsClient().increment("shard.reconnect");
             MantaroBot.getInstance().getStatsClient().recordEvent(com.timgroup.statsd.Event.builder().withTitle("shard.reconnect")
                     .withText("Shard reconnecting")
                     .withDate(new Date()).build());
         }
 
-        LogUtils.shardSimple(String.format("`Shard #%d`: Changed from `%s` to `%s`", jda.getShardInfo().getShardId(), event.getOldStatus(), event.getStatus()));
-    }
-    //endregion
+		log.info(String.format("`Shard #%d`: Changed from `%s` to `%s`", jda.getShardInfo().getShardId(), event.getOldStatus(), event.getStatus()));
+	}
+	//endregion
 
     private void logUnban(GuildUnbanEvent event) {
         try {
@@ -333,7 +331,7 @@ public class MantaroListener implements EventListener {
     }
 
     private void onException(ExceptionEvent event) {
-        if (!event.isLogged()){
+        if (!event.isLogged()) {
             SentryHelper.captureException("Exception captured in un-logged trace", event.getCause(), this.getClass());
         };
     }
@@ -378,43 +376,23 @@ public class MantaroListener implements EventListener {
         GuildData dbGuild = MantaroData.db().getGuild(event.getGuild());
         ExtraGuildData guildData = dbGuild.getData();
 
-        //un-mute check
-        //This is a pretty lazy check.
-        if(!guildData.getMutedTimelyUsers().isEmpty()){
-            guildData.getMutedTimelyUsers().forEach((id, maxTime) -> {
-                if(System.currentTimeMillis() > maxTime){
-                    try{
-                        guildData.getMutedTimelyUsers().remove(id);
-                        dbGuild.saveAsync();
-                        event.getGuild().getController().
-                                removeRolesFromMember(event.getGuild().getMemberById(id), event.getGuild().getRoleById(guildData.getMutedRole())).queue();
-                        guildData.setCases(guildData.getCases() + 1);
-                        dbGuild.save();
-                        ModLog.log(event.getMember(), MantaroBot.getInstance().getUserById(id), "Mute timeout expired", ModLog.ModAction.UNMUTE, guildData.getCases());
-                    } catch (Exception e){
-                        e.printStackTrace();
-                    }
-                }
-            });
-        }
-
         //link protection
-        if(guildData.isLinkProtection() && !guildData.getLinkProtectionAllowedChannels().contains(event.getChannel().getId())){
+        if(guildData.isLinkProtection() && !guildData.getLinkProtectionAllowedChannels().contains(event.getChannel().getId())) {
             if(DISCORD_INVITE.matcher(event.getMessage().getContent()).find()
-                    && !event.getMember().hasPermission(Permission.ADMINISTRATOR) && !event.getMember().hasPermission(Permission.MANAGE_SERVER)){
+                    && !event.getMember().hasPermission(Permission.ADMINISTRATOR) && !event.getMember().hasPermission(Permission.MANAGE_SERVER)) {
                 Member bot = event.getGuild().getSelfMember();
 
                 MantaroBot.getInstance().getStatsClient().increment("links_blocked");
-                if(bot.hasPermission(Permission.MESSAGE_MANAGE) || bot.hasPermission(Permission.ADMINISTRATOR)){
+                if(bot.hasPermission(Permission.MESSAGE_MANAGE) || bot.hasPermission(Permission.ADMINISTRATOR)) {
                     User author = event.getAuthor();
 
                     //Ignore myself.
-                    if(event.getAuthor().getId().equals(event.getJDA().getSelfUser().getId())){
+                    if(event.getAuthor().getId().equals(event.getJDA().getSelfUser().getId())) {
                         return;
                     }
 
                     //Ignore log channel.
-                    if(guildData.getGuildLogChannel() != null && event.getChannel().getId().equals(guildData.getGuildLogChannel())){
+                    if(guildData.getGuildLogChannel() != null && event.getChannel().getId().equals(guildData.getGuildLogChannel())) {
                         return;
                     }
 
@@ -429,11 +407,11 @@ public class MantaroListener implements EventListener {
         }
 
         //Slow mode
-        if(guildData.isSlowMode()){
+        if(guildData.isSlowMode()) {
             if (!slowModeLimiter.process(event.getAuthor().getId())) {
                 Member bot = event.getGuild().getSelfMember();
                 if(bot.hasPermission(Permission.MESSAGE_MANAGE) || bot.hasPermission(Permission.ADMINISTRATOR)
-                    && !event.getMember().hasPermission(Permission.ADMINISTRATOR) && !event.getMember().hasPermission(Permission.MANAGE_SERVER)){
+                    && !event.getMember().hasPermission(Permission.ADMINISTRATOR) && !event.getMember().hasPermission(Permission.MANAGE_SERVER)) {
                     event.getMessage().delete().queue();
                 }else {
                     event.getChannel().sendMessage(EmoteReference.ERROR + "I cannot engage slow mode because I don't have permission to delete messages!").queue();
@@ -445,11 +423,11 @@ public class MantaroListener implements EventListener {
         }
 
         //Anti-spam. Allows 2 messages every 3 seconds.
-        if(guildData.isAntiSpam()){
+        if(guildData.isAntiSpam()) {
             if (!spamModeLimiter.process(event.getAuthor().getId())) {
                 Member bot = event.getGuild().getSelfMember();
                 if(bot.hasPermission(Permission.MESSAGE_MANAGE) || bot.hasPermission(Permission.ADMINISTRATOR)
-                        && !event.getMember().hasPermission(Permission.ADMINISTRATOR) && !event.getMember().hasPermission(Permission.MANAGE_SERVER)){
+                        && !event.getMember().hasPermission(Permission.ADMINISTRATOR) && !event.getMember().hasPermission(Permission.MANAGE_SERVER)) {
                     event.getMessage().delete().queue();
                 }else {
                     event.getChannel().sendMessage(EmoteReference.ERROR + "I cannot engage anti-spam mode because I don't have permission to delete messages!").queue();
@@ -504,7 +482,7 @@ public class MantaroListener implements EventListener {
                 try{
                     event.getGuild().getController().addRolesToMember(event.getMember(), event.getGuild().getRoleById(role)).queue(s ->
                             log.debug("Successfully added a new role to " + event.getMember()));
-                } catch (PermissionException e){
+                } catch (PermissionException e) {
                     MantaroData.db().getGuild(event.getGuild()).getData().setGuildAutoRole(null);
                     MantaroData.db().getGuild(event.getGuild()).save();
                     event.getGuild().getOwner().getUser().openPrivateChannel().queue(messageChannel ->

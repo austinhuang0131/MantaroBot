@@ -28,7 +28,7 @@ import java.util.stream.Stream;
 @Module
 public class QuoteCmd {
     @Subscribe
-    public static void quote(CommandRegistry cr) {
+    public void quote(CommandRegistry cr) {
         cr.register("quote", new SimpleCommand(Category.MISC) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -47,7 +47,7 @@ public class QuoteCmd {
                 try {
                     messageHistory = event.getChannel().getHistory().retrievePast(100).complete();
                 } catch (Exception e) {
-                    if(e instanceof PermissionException){
+                    if(e instanceof PermissionException) {
                         event.getChannel().sendMessage(EmoteReference.CRYING + "I don't have permission to do this :<").queue();
                         return;
                     }
@@ -144,7 +144,7 @@ public class QuoteCmd {
         });
     }
 
-    private static MessageEmbed buildQuoteEmbed(SimpleDateFormat dateFormat, EmbedBuilder builder, QuotedMessage quote) {
+    private MessageEmbed buildQuoteEmbed(SimpleDateFormat dateFormat, EmbedBuilder builder, QuotedMessage quote) {
         builder.setAuthor(quote.getUserName() + " said: ", null, quote.getUserAvatar())
             .setDescription("Quote made in server " + quote.getGuildName() + " in channel #" + quote.getChannelName())
             .addField("Content", quote.getContent(), false)

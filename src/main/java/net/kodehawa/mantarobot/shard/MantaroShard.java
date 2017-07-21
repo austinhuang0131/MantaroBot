@@ -99,21 +99,21 @@ public class MantaroShard implements JDA {
             log.info("Dropped shard #" + shardId);
         }
 
-        JDABuilder jdaBuilder = new JDABuilder(AccountType.BOT)
-                .setToken(config().get().token)
-                .setEventManager(manager)
-                //.setAudioSendFactory(new NativeAudioSendFactory())
-                .setAutoReconnect(true)
-                .setCorePoolSize(15)
-                .setHttpClientBuilder(
-                        new OkHttpClient.Builder()
-                                .connectTimeout(30, TimeUnit.SECONDS)
-                                .readTimeout(30, TimeUnit.SECONDS)
-                                .writeTimeout(30, TimeUnit.SECONDS)
-                )
-                .setGame(Game.of("Hold on to your seatbelts!"));
-        if(totalShards > 1)
-            jdaBuilder.useSharding(shardId, totalShards);
+		JDABuilder jdaBuilder = new JDABuilder(AccountType.BOT)
+			.setToken(config().get().token)
+			.setEventManager(manager)
+			.setAudioSendFactory(new NativeAudioSendFactory())
+			.setAutoReconnect(true)
+			.setCorePoolSize(15)
+			.setHttpClientBuilder(
+					new OkHttpClient.Builder()
+							.connectTimeout(30, TimeUnit.SECONDS)
+							.readTimeout(30, TimeUnit.SECONDS)
+							.writeTimeout(30, TimeUnit.SECONDS)
+			)
+			.setGame(Game.of("Hold on to your seatbelts!"));
+		if (totalShards > 1)
+			jdaBuilder.useSharding(shardId, totalShards);
 
         jda = jdaBuilder.buildAsync();
         Thread.sleep(5000);

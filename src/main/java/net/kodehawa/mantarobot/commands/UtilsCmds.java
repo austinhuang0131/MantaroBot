@@ -45,7 +45,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 @Module
 public class UtilsCmds {
     @Subscribe
-    public static void birthday(CommandRegistry registry) {
+    public void birthday(CommandRegistry registry) {
         registry.register("birthday", new SimpleCommand(Category.UTILS) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -158,7 +158,7 @@ public class UtilsCmds {
     }
 
     @Subscribe
-    public static void choose(CommandRegistry registry) {
+    public void choose(CommandRegistry registry) {
         registry.register("choose", new SimpleCommand(Category.UTILS) {
             @Override
             public void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -186,7 +186,7 @@ public class UtilsCmds {
     }
 
     @Subscribe
-    public static void dictionary(CommandRegistry registry) {
+    public void dictionary(CommandRegistry registry) {
         registry.register("dictionary", new SimpleCommand(Category.UTILS) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -265,11 +265,11 @@ public class UtilsCmds {
     }
 
     @Subscribe
-    public static void remindme(CommandRegistry registry){
+    public void remindme(CommandRegistry registry) {
         registry.register("remindme", new SimpleCommand(Category.UTILS) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
-                if(content.isEmpty()){
+                if(content.isEmpty()) {
                     event.getChannel().sendMessage(EmoteReference.ERROR + "What could I remind you of if you don't give me what to remind you? " +
                         "Oh! Lemme remind you of setting a reminder!").queue();
                     return;
@@ -278,7 +278,7 @@ public class UtilsCmds {
 
                 Map<String, Optional<String>> t = StringUtils.parse(args);
 
-                if(!t.get("time").isPresent()){
+                if(!t.get("time").isPresent()) {
                     event.getChannel().sendMessage(EmoteReference.ERROR + "You didn't give me a `-time` argument! (Example: `-time 1h20m`)").queue();
                 }
 
@@ -286,7 +286,7 @@ public class UtilsCmds {
                 User user = event.getAuthor();
                 long time = Utils.parseTime(t.get("time").get());
 
-                if(time < 10000){
+                if(time < 10000) {
                     event.getChannel().sendMessage(EmoteReference.ERROR + "That's too little time!").queue();
                     return;
                 }
@@ -315,7 +315,7 @@ public class UtilsCmds {
     }
 
     @Subscribe
-    public static void google(CommandRegistry registry) {
+    public void google(CommandRegistry registry) {
         registry.register("google", new SimpleCommand(Category.UTILS) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -358,7 +358,7 @@ public class UtilsCmds {
     }
 
     @Subscribe
-    public static void time(CommandRegistry registry) {
+    public void time(CommandRegistry registry) {
         registry.register("time", new SimpleCommand(Category.UTILS) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -403,7 +403,7 @@ public class UtilsCmds {
     }
 
     @Subscribe
-    public static void urban(CommandRegistry registry) {
+    public void urban(CommandRegistry registry) {
         registry.register("urban", new SimpleCommand(Category.UTILS) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -488,7 +488,7 @@ public class UtilsCmds {
     }
 
     @Subscribe
-    public static void weather(CommandRegistry registry) {
+    public void weather(CommandRegistry registry) {
         registry.register("weather", new SimpleCommand(Category.UTILS) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -568,7 +568,7 @@ public class UtilsCmds {
     }
 
     @Subscribe
-    public static void ytmp3(CommandRegistry registry) {
+    public void ytmp3(CommandRegistry registry) {
         registry.register("ytmp3", new SimpleCommand(Category.UTILS) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -621,14 +621,14 @@ public class UtilsCmds {
         });
     }
 
-    static String dateGMT(Guild guild, String tz) {
-        DateFormat format = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss");
-        Date date = new Date();
+	protectedstatic String dateGMT(Guild guild, String tz) {
+		DateFormat format = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss");
+		Date date = new Date();
 
         GuildData dbGuild = MantaroData.db().getGuild(guild.getId());
         ExtraGuildData guildData = dbGuild.getData();
 
-        if(guildData.getTimeDisplay() == 1){
+        if(guildData.getTimeDisplay() == 1) {
             format = new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss a");
         }
 

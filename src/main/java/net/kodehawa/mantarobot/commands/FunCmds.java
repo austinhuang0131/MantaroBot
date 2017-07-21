@@ -27,10 +27,10 @@ import java.util.stream.Stream;
 @Module
 public class FunCmds {
 
-    private static Random r = new Random();
+    private Random r = new Random();
 
     @Subscribe
-    public static void coinflip(CommandRegistry cr) {
+    public void coinflip(CommandRegistry cr) {
         cr.register("coinflip", new SimpleCommand(Category.FUN) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -152,7 +152,7 @@ public class FunCmds {
     }
 
     @Subscribe
-    public static void marry(CommandRegistry cr) {
+    public void marry(CommandRegistry cr) {
         cr.register("marry", new SimpleCommand(Category.FUN) {
             @Override
             public void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -254,7 +254,7 @@ public class FunCmds {
     }
 
     @Subscribe
-    public static void ratewaifu(CommandRegistry cr) {
+    public void ratewaifu(CommandRegistry cr) {
         cr.register("ratewaifu", new SimpleCommand(Category.FUN) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -283,7 +283,7 @@ public class FunCmds {
     }
 
     @Subscribe
-    public static void roll(CommandRegistry registry) {
+    public void roll(CommandRegistry registry) {
         registry.register("roll", new SimpleCommand(Category.FUN) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -327,7 +327,7 @@ public class FunCmds {
         });
     }
 
-    private static long diceRoll(int size, int amount) {
+    private long diceRoll(int size, int amount) {
         long sum = 0;
         for (int i = 0; i < amount; i++) sum += r.nextInt(size) + 1;
         return sum;

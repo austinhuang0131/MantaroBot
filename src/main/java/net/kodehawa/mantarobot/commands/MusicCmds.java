@@ -30,8 +30,10 @@ import net.kodehawa.mantarobot.utils.Utils;
 import net.kodehawa.mantarobot.utils.commands.EmoteReference;
 
 import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static net.kodehawa.mantarobot.commands.music.utils.AudioCmdUtils.embedForQueue;
@@ -41,7 +43,7 @@ import static org.apache.commons.lang3.StringUtils.replaceEach;
 @Slf4j
 public class MusicCmds {
     @Subscribe
-    public static void forceskip(CommandRegistry cr) {
+    public void forceskip(CommandRegistry cr) {
         cr.register("forceskip", new SimpleCommand(Category.MUSIC, CommandPermission.ADMIN) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -72,7 +74,7 @@ public class MusicCmds {
     }
 
     @Subscribe
-    public static void move(CommandRegistry cr) {
+    public void move(CommandRegistry cr) {
         cr.register("move", new SimpleCommand(Category.MUSIC) {
             RateLimiter rl = new RateLimiter(TimeUnit.SECONDS, 20);
 
@@ -150,7 +152,7 @@ public class MusicCmds {
     }
 
     @Subscribe
-    public static void np(CommandRegistry cr) {
+    public void np(CommandRegistry cr) {
         cr.register("np", new SimpleCommand(Category.MUSIC) {
 
             @Override
@@ -192,7 +194,7 @@ public class MusicCmds {
 
 
     @Subscribe
-    public static void pause(CommandRegistry cr) {
+    public void pause(CommandRegistry cr) {
         cr.register("pause", new SimpleCommand(Category.MUSIC) {
             @Override
             public MessageEmbed help(GuildMessageReceivedEvent event) {
@@ -222,7 +224,7 @@ public class MusicCmds {
     }
 
     @Subscribe
-    public static void play(CommandRegistry cr) {
+    public void play(CommandRegistry cr) {
         cr.register("play", new SimpleCommand(Category.MUSIC) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -259,7 +261,7 @@ public class MusicCmds {
     }
 
     @Subscribe
-    public static void forceplay(CommandRegistry cr) {
+    public void forceplay(CommandRegistry cr) {
         cr.register("forceplay", new SimpleCommand(Category.MUSIC) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -292,7 +294,7 @@ public class MusicCmds {
     }
 
     @Subscribe
-    public static void rewind(CommandRegistry cr) {
+    public void rewind(CommandRegistry cr) {
         cr.register("rewind", new SimpleCommand(Category.MUSIC) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -338,7 +340,7 @@ public class MusicCmds {
     }
 
     @Subscribe
-    public static void skipahead(CommandRegistry cr) {
+    public void skipahead(CommandRegistry cr) {
         cr.register("skipahead", new SimpleCommand(Category.MUSIC) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -385,7 +387,7 @@ public class MusicCmds {
 
 
     @Subscribe
-    public static void queue(CommandRegistry cr) {
+    public void queue(CommandRegistry cr) {
         cr.register("queue", new SimpleCommand(Category.MUSIC) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -444,7 +446,7 @@ public class MusicCmds {
     }
 
     @Subscribe
-    public static void removetrack(CommandRegistry cr) {
+    public void removetrack(CommandRegistry cr) {
         cr.register("removetrack", new SimpleCommand(Category.MUSIC) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -555,7 +557,7 @@ public class MusicCmds {
     }
 
     @Subscribe
-    public static void repeat(CommandRegistry cr) {
+    public void repeat(CommandRegistry cr) {
         cr.register("repeat", new SimpleCommand(Category.MUSIC) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -613,7 +615,7 @@ public class MusicCmds {
     }
 
     @Subscribe
-    public static void shuffle(CommandRegistry cr) {
+    public void shuffle(CommandRegistry cr) {
         cr.register("shuffle", new SimpleCommand(Category.MUSIC) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -641,7 +643,7 @@ public class MusicCmds {
     }
 
     @Subscribe
-    public static void skip(CommandRegistry cr) {
+    public void skip(CommandRegistry cr) {
         cr.register("skip", new SimpleCommand(Category.MUSIC) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -697,7 +699,7 @@ public class MusicCmds {
     }
 
     @Subscribe
-    public static void stop(CommandRegistry cr) {
+    public void stop(CommandRegistry cr) {
         cr.register("stop", new SimpleCommand(Category.MUSIC) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -753,7 +755,7 @@ public class MusicCmds {
     }
 
     @Subscribe
-    public static void volume(CommandRegistry cr) {
+    public void volume(CommandRegistry cr) {
         cr.register("volume", new SimpleCommand(Category.MUSIC) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -778,21 +780,21 @@ public class MusicCmds {
                     if(args[0].equals("check")) {
                         event.getChannel().sendMessage(
                                 EmoteReference.ZAP + "The current volume for this session is: " + player.getVolume() + "\n\n" +
-                                        GuildStatsManager.bar(player.getVolume() / 2, 50))
+                                        GuildStatsManager.bar(player.getVolume(), 50))
                                 .queue();
                         return;
                     }
 
                     int volume;
                     try {
-                        volume = Math.max(0, Math.min(100, Integer.parseInt(args[0])));
+                        volume = Math.max(4, Math.min(100, Integer.parseInt(args[0])));
                     } catch(Exception e) {
                         event.getChannel().sendMessage(EmoteReference.ERROR + "Not a valid number.").queue();
                         return;
                     }
                     player.setVolume(volume);
                     event.getChannel().sendMessage(String.format(EmoteReference.OK + "Volume set to %d\n\n%s", volume,
-                            GuildStatsManager.bar(volume / 2, 50)))
+                            GuildStatsManager.bar(volume, 50)))
                             .queue();
                 } else {
                     event.getChannel().sendMessage(
@@ -809,23 +811,23 @@ public class MusicCmds {
                         .addField("Usage", "`~>volume <number>` - **Sets the volume**", false)
                         .addField("Parameters", "`number` - **An integer between 1 and 100**", false)
                         .addField("Notice", "**This is a *donator-only* feature!**" +
-                                "\nTo check the current volume, do `~>volume check`", false)
+                                "\nTo check the current volume, do `~>volume check. Minimum volume is 4.`", false)
                         .build();
             }
         });
     }
 
-    private static boolean isDJ(Member member) {
+    private boolean isDJ(Member member) {
         Role djRole = member.getGuild().getRolesByName("DJ", true).stream().findFirst().orElse(null);
         return member.isOwner() || member.hasPermission(Permission.MANAGE_SERVER) || member.hasPermission(Permission.ADMINISTRATOR) ||
                 (djRole != null && member.getRoles().contains(djRole));
     }
 
-    private static void sendNotConnectedToMyChannel(MessageChannel channel) {
+    private void sendNotConnectedToMyChannel(MessageChannel channel) {
         channel.sendMessage(EmoteReference.ERROR + "You aren't connected to the voice channel I'm currently playing in!").queue();
     }
 
-    private static void stop(GuildMessageReceivedEvent event) {
+    private void stop(GuildMessageReceivedEvent event) {
         GuildMusicManager musicManager = MantaroBot.getInstance().getAudioManager().getMusicManager(event.getGuild());
 
         if(musicManager.getTrackScheduler().getAudioPlayer().getPlayingTrack() != null && !musicManager.getTrackScheduler().getAudioPlayer().isPaused()) {

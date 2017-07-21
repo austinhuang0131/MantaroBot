@@ -41,7 +41,7 @@ public class ActionCmds {
     private static final DataManager<List<String>> FACEDESK = new SimpleFileDataManager("assets/mantaro/texts/facedesk.txt");
 
     @Subscribe
-    public static void action(CommandRegistry registry) {
+    public void action(CommandRegistry registry) {
         registry.register("action", new SimpleCommand(Category.ACTION) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -75,7 +75,7 @@ public class ActionCmds {
     }
 
     @Subscribe
-    public static void bloodsuck(CommandRegistry registry) {
+    public void bloodsuck(CommandRegistry registry) {
         registry.register("bloodsuck", new SimpleCommand(Category.ACTION) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -100,15 +100,15 @@ public class ActionCmds {
         });
     }
 
-    @Subscribe
-    public static void lewd(CommandRegistry registry) {
-        registry.register("lewd", new SimpleCommand(Category.ACTION) {
-            @Override
-            protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
-                String lood = event.getMessage().getMentionedUsers().stream().map(IMentionable::getAsMention).collect(Collectors.joining(" "));
-                event.getChannel().sendFile(ImageActionCmd.CACHE.getInput("http://imgur.com/LJfZYau.png"), "lewd.png"
-                        , new MessageBuilder().append(lood).append(" Y-You lewdie!").build()).queue();
-            }
+		@Subscribe
+	public  void lewd(CommandRegistry registry) {
+		registry.register("lewd", new SimpleCommand(Category.ACTION) {
+			@Override
+			protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
+				String lood = event.getMessage().getMentionedUsers().stream().map(IMentionable::getAsMention).collect(Collectors.joining(" "));
+				event.getChannel().sendFile(ImageActionCmd.CACHE.getInput("http://imgur.com/LJfZYau.png"), "lewd.png"
+					, new MessageBuilder().append(lood).append(" Y-You lewdie!").build()).queue();
+			}
 
             @Override
             public MessageEmbed help(GuildMessageReceivedEvent event) {
@@ -119,7 +119,7 @@ public class ActionCmds {
     }
 
     @Subscribe
-    public static void meow(CommandRegistry registry) {
+    public void meow(CommandRegistry registry) {
         registry.register("meow", new SimpleCommand(Category.ACTION) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -146,7 +146,7 @@ public class ActionCmds {
     }
 
     @Subscribe
-    public static void register(CommandRegistry cr) {
+    public void register(CommandRegistry cr) {
 
         //pat();
         cr.register("pat", new ImageActionCmd(

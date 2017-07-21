@@ -39,7 +39,7 @@ import static net.kodehawa.mantarobot.commands.info.AsyncInfoMonitor.*;
 @Module
 public class DebugCmds {
     @Subscribe
-    public static void info(CommandRegistry cr) {
+    public void info(CommandRegistry cr) {
         cr.register("info", new SimpleCommand(Category.INFO) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -110,7 +110,7 @@ public class DebugCmds {
     }
 
     @Subscribe
-    public static void ping(CommandRegistry cr) {
+    public void ping(CommandRegistry cr) {
         RateLimiter rateLimiter = new RateLimiter(TimeUnit.SECONDS, 5);
 
         cr.register("ping", new SimpleCommand(Category.INFO) {
@@ -139,7 +139,7 @@ public class DebugCmds {
     }
 
     @Subscribe
-    public static void shard(CommandRegistry cr) {
+    public void shard(CommandRegistry cr) {
         cr.register("shardinfo", new SimpleCommand(Category.INFO) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -147,7 +147,7 @@ public class DebugCmds {
                 for(MantaroShard shard : MantaroBot.getInstance().getShardList()) {
                     JDA jda = shard.getJDA();
                     builder.append(String.format(
-                            "%-15s | %-9s | U: %-5d | G: %-4d | L: %-7s | MC: %-2d",
+                            "%-15s | %-9s | U: %-6d | G: %-4d | L: %-7s | MC: %-2d",
                             jda.getShardInfo() == null ? "Shard [0 / 1]" : jda.getShardInfo(),
                             jda.getStatus(),
                             jda.getUsers().size(),
@@ -163,16 +163,18 @@ public class DebugCmds {
                     builder.append("\n");
                 }
                 Queue<String> m = new LinkedList<>();
-                String s = builder.toString();
+                String s = builder.toString().trim();
                 StringBuilder sb = new StringBuilder();
                 while(s.length() > 0) {
-                    String line = s.substring(0, Math.max(s.indexOf('\n'), s.length()));
+                    int idx = s.indexOf('\n');
+                    String line = idx == -1 ? s : s.substring(0, idx+1);
                     s = s.substring(line.length());
-                    if(sb.length() + line.length() > 1980) {
+                    if(s.equals("\n")) s = "";
+                    if(sb.length() + line.length() > 1800) {
                         m.add(sb.toString());
                         sb = new StringBuilder();
                     }
-                    sb.append(line).append('\n');
+                    sb.append(line);
                 }
                 if(sb.length() != 0) m.add(sb.toString());
 
@@ -188,7 +190,7 @@ public class DebugCmds {
         });
     }
 
-    private static String ratePing(long ping) {
+    private String ratePing(long ping) {
         if(ping == 69) return "l-lewd! <:MantaroGasm:318869352851963904>";
         if(ping <= 1) return "supersonic speed! :upside_down:"; //just in case...
         if(ping <= 10) return "faster than Sonic! :smiley:";

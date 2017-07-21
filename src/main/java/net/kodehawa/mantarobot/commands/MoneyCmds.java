@@ -43,10 +43,10 @@ import static java.lang.System.currentTimeMillis;
 @Module
 public class MoneyCmds {
 
-    private static Random random = new Random();
+    private Random random = new Random();
 
     @Subscribe
-    public static void daily(CommandRegistry cr) {
+    public void daily(CommandRegistry cr) {
         RateLimiter rateLimiter = new RateLimiter(TimeUnit.HOURS, 24);
         Random r = new Random();
         cr.register("daily", new SimpleCommand(Category.CURRENCY) {
@@ -115,7 +115,7 @@ public class MoneyCmds {
     }
 
     @Subscribe
-    public static void gamble(CommandRegistry cr) {
+    public void gamble(CommandRegistry cr) {
         RateLimiter rateLimiter = new RateLimiter(TimeUnit.SECONDS, 15);
         SecureRandom r = new SecureRandom();
 
@@ -136,7 +136,7 @@ public class MoneyCmds {
                     return;
                 }
 
-                if(player.getMoney() > (long)(Integer.MAX_VALUE) * 3){
+                if(player.getMoney() > (long)(Integer.MAX_VALUE) * 3) {
                     event.getChannel().sendMessage(EmoteReference.ERROR2 + "You have too much money! Maybe transfer or buy items?").queue();
                     return;
                 }
@@ -187,9 +187,9 @@ public class MoneyCmds {
                 final int finalLuck = luck;
                 final long finalGains = gains;
 
-                player.setLocked(true);
-
                 if (i >= 0x1fffffff) {
+                    player.setLocked(true);
+                    player.save();
                     event.getChannel().sendMessage(EmoteReference.WARNING + "You're about to bet **" + i + "** " +
                             "credits (which seems to be a lot). Are you sure? Type **yes** to continue and **no** otherwise.").queue();
                     InteractiveOperations.create(event.getChannel(), 30, new InteractiveOperationListener() {
@@ -198,12 +198,12 @@ public class MoneyCmds {
                                     if (e.getAuthor().getId().equals(user.getId())) {
                                         if (e.getMessage().getContent().equalsIgnoreCase("yes")) {
                                             proceedGamble(event, player, finalLuck, random, i, finalGains);
-                                            player.setLocked(false);
                                             return COMPLETED;
                                         }
                                         else if (e.getMessage().getContent().equalsIgnoreCase("no")) {
                                             e.getChannel().sendMessage(EmoteReference.ZAP + "Cancelled bet.").queue();
                                             player.setLocked(false);
+                                            player.saveAsync();
                                             return COMPLETED;
                                         }
                                     }
@@ -216,6 +216,7 @@ public class MoneyCmds {
                                     event.getChannel().sendMessage(EmoteReference.ERROR + "Time to complete the operation has ran out.")
                                             .queue();
                                     player.setLocked(false);
+                                    player.saveAsync();
                                 }
                             });
 
@@ -223,7 +224,6 @@ public class MoneyCmds {
                 }
 
                 proceedGamble(event, player, luck, random, i, gains);
-                player.setLocked(false);
             }
 
             @Override
@@ -237,7 +237,7 @@ public class MoneyCmds {
     }
 
     @Subscribe
-    public static void loot(CommandRegistry cr) {
+    public void loot(CommandRegistry cr) {
         RateLimiter rateLimiter = new RateLimiter(TimeUnit.MINUTES, 5);
         Random r = new Random();
 
@@ -330,7 +330,33 @@ public class MoneyCmds {
     }
 
     @Subscribe
-    public static void richest(CommandRegistry cr) {
+    public void balance(CommandRegistry cr){
+        cr.register("balance", new SimpleCommand(Category.CURRENCY) {
+            @Override
+            protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
+                User user = event.getAuthor();
+                boolean isExternal = false;
+                if(!event.getMessage().getMentionedUsers().isEmpty()){
+                    user = event.getMessage().getMentionedUsers().get(0);
+                    isExternal = true;
+                }
+
+                long balance = MantaroData.db().getPlayer(user).getMoney();
+
+                event.getChannel().sendMessage(EmoteReference.DIAMOND + (isExternal ? user.getName() + "'s balance is: **$" : "Your balance is: **$") + balance + "**").queue();
+            }
+
+            @Override
+            public MessageEmbed help(GuildMessageReceivedEvent event) {
+                return baseEmbed(event, "Balance command")
+                        .setDescription("**Shows your current balance or another person's balance.**")
+                        .build();
+            }
+        });
+    }
+
+    @Subscribe
+    public void richest(CommandRegistry cr) {
         cr.register("leaderboard", new SimpleCommand(Category.CURRENCY) {
             RateLimiter rateLimiter = new RateLimiter(TimeUnit.SECONDS, 10);
 
@@ -438,7 +464,7 @@ public class MoneyCmds {
         cr.registerAlias("leaderboard", "richest");
     }
 
-    private static void proceedGamble(GuildMessageReceivedEvent event, UserData player, int luck, Random r, long i, long gains) {
+    private void proceedGamble(GuildMessageReceivedEvent event, UserData player, int luck, Random r, long i, long gains) {
         if (luck > r.nextInt(110)) {
             if (player.addMoney(gains)) {
                 event.getChannel().sendMessage(EmoteReference.DICE + "Congrats, you won " + gains + " credits and got to keep what you " +
@@ -455,11 +481,11 @@ public class MoneyCmds {
             event.getChannel().sendMessage("\uD83C\uDFB2 Sadly, you lost " + (player.getMoney() == 0 ? "all your" : i) + " credits! " +
                     "\uD83D\uDE26").queue();
         }
-
+        player.setLocked(false);
         player.saveAsync();
     }
 
-    private static Cursor<Map> getGlobalRichest(OrderBy template, String pattern){
+    private Cursor<Map> getGlobalRichest(OrderBy template, String pattern) {
         return template.filter(player -> player.g("id").match(pattern))
                 .map(player -> player.pluck("id", "money"))
                 .limit(15)

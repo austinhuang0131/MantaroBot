@@ -23,7 +23,7 @@ import net.kodehawa.mantarobot.utils.commands.EmoteReference;
 @Module
 public class ModerationCmds {
     @Subscribe
-    public static void softban(CommandRegistry cr) {
+    public void softban(CommandRegistry cr) {
         cr.register("softban", new SimpleCommand(Category.MODERATION) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -141,7 +141,7 @@ public class ModerationCmds {
     }
 
     @Subscribe
-    public static void ban(CommandRegistry cr) {
+    public void ban(CommandRegistry cr) {
         cr.register("ban", new SimpleCommand(Category.MODERATION) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -238,7 +238,7 @@ public class ModerationCmds {
     }
 
     @Subscribe
-    public static void kick(CommandRegistry cr) {
+    public void kick(CommandRegistry cr) {
         cr.register("kick", new SimpleCommand(Category.MODERATION) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -302,7 +302,7 @@ public class ModerationCmds {
                     guild.getController().kick(member).reason(finalReason).queue(
                             success -> {
 
-                                if(!user.isBot()){
+                                if(!user.isBot()) {
                                     user.openPrivateChannel().complete().sendMessage(EmoteReference.MEGA + "You were **kicked** by " + event
                                             .getAuthor().getName() + "#"
                                             + event.getAuthor().getDiscriminator() + " with reason: " + finalReason + ".").queue();
@@ -341,7 +341,7 @@ public class ModerationCmds {
     }
 
     @Subscribe
-    public static void tempban(CommandRegistry cr) {
+    public void tempban(CommandRegistry cr) {
         cr.register("tempban", new SimpleCommand(Category.MODERATION) {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
@@ -391,7 +391,7 @@ public class ModerationCmds {
                 receivedMessage.getMentionedUsers().forEach(user ->
                     guild.getController().ban(user, 7).queue(
                             success -> {
-                                user.openPrivateChannel().complete().sendMessage(EmoteReference.MEGA + "You were **temporarly banned** by " + event
+                                user.openPrivateChannel().complete().sendMessage(EmoteReference.MEGA + "You were **temporarily banned** by " + event
                                         .getAuthor().getName() + "#"
                                         + event.getAuthor().getDiscriminator() + " with reason: " + finalReason + ".").queue();
                                 db.getData().setCases(db.getData().getCases() + 1);

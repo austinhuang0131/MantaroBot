@@ -16,11 +16,9 @@ import java.util.List;
 import static com.rethinkdb.RethinkDB.r;
 
 public class ManagedDatabase {
-    public static final Config MANTARO_FACTORY = Snowflakes.config(1495900000L, 2L, 2L, 12L);
-    public static final Worker ID_WORKER = MANTARO_FACTORY.worker(0, 0), LOG_WORKER = MANTARO_FACTORY.worker(0, 2);
+	public static final Config MANTARO_FACTORY = Snowflakes.config(1495900000L, 2L, 2L, 12L);
+    public static final Worker ID_WORKER = MANTARO_FACTORY.worker(0, 0), LOG_WORKER = MANTARO_FACTORY.worker(0, 2);private final Connection conn;
 
-    private final Connection conn;
-    private Guild guild;
 
     public ManagedDatabase(Connection conn) {
         this.conn = conn;

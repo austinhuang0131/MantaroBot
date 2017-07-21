@@ -45,7 +45,6 @@ public class TrackScheduler extends AudioEventAdapter {
     private long requestedChannel;
     @Getter
     private AudioTrack previousTrack, currentTrack;
-    private ExtraGuildData guildData;
 
     public TrackScheduler(AudioPlayer player, String guildId) {
         this.audioPlayer = player;
@@ -53,7 +52,6 @@ public class TrackScheduler extends AudioEventAdapter {
         this.guildId = guildId;
         this.voteSkips = new ArrayList<>();
         this.voteStop = new ArrayList<>();
-        this.guildData = MantaroData.db().getGuild(guildId).getData();
     }
 
     public void queue(AudioTrack track) {
@@ -73,7 +71,7 @@ public class TrackScheduler extends AudioEventAdapter {
             currentTrack = queue.poll();
             audioPlayer.startTrack(currentTrack, !force);
             if(skip) onTrackStart();
-            if(repeatMode == Repeat.QUEUE) queue(previousTrack);
+            if(repeatMode == Repeat.QUEUE) queue(previousTrack.makeClone());
         }
 
         if(currentTrack == null) onStop();
@@ -84,13 +82,13 @@ public class TrackScheduler extends AudioEventAdapter {
             return;
         }
 
-        if(guildData.isMusicAnnounce() && getRequestedChannelParsed() != null) {
+        if(MantaroData.db().getGuild(guildId).getData().isMusicAnnounce() && getRequestedChannelParsed() != null) {
             VoiceChannel voiceChannel = getRequestedChannelParsed().getGuild().getSelfMember().getVoiceState().getChannel();
             AudioTrackInfo information = currentTrack.getInfo();
             String title = information.title;
             long trackLength = information.length;
 
-            if(getRequestedChannelParsed().canTalk()) {
+            if(getRequestedChannelParsed().canTalk() && currentTrack != null) {
                 User user = null;
                 if(getCurrentTrack().getUserData() != null) {
                     user = MantaroBot.getInstance().getUserById(String.valueOf(getCurrentTrack().getUserData()));
@@ -153,8 +151,6 @@ public class TrackScheduler extends AudioEventAdapter {
 
     public void stop() {
         queue.clear();
-        currentTrack = null;
-        previousTrack = null;
         onStop();
     }
 
@@ -177,8 +173,9 @@ public class TrackScheduler extends AudioEventAdapter {
 
         TextChannel ch = getRequestedChannelParsed();
         if(ch != null && ch.canTalk()) {
-            ch.sendMessage(":mega: Finished playing current queue! I hope you enjoyed it.")
-                    .queue(message -> message.delete().queueAfter(20, TimeUnit.SECONDS));
+            ch.sendMessage(EmoteReference.MEGA + "Finished playing current queue! I hope you enjoyed it.\n" +
+                    ":heart: Consider donating on patreon.com/mantaro if you like me, even a small donation will help towards keeping the bot alive")
+                    .queue(message -> message.delete().queueAfter(30, TimeUnit.SECONDS));
         }
     }
 

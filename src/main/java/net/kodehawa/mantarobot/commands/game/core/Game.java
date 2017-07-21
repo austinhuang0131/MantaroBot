@@ -30,7 +30,7 @@ public abstract class Game {
             return OperationListener.IGNORED;
         }
 
-        for(String s : MantaroData.config().get().getPrefix()){
+        for(String s : MantaroData.config().get().getPrefix()) {
             if (e.getMessage().getContent().startsWith(s)) {
                 return OperationListener.IGNORED;
             }

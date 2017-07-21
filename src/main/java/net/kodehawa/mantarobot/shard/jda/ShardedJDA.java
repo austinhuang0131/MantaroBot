@@ -5,9 +5,12 @@ import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.hooks.IEventManager;
 import net.dv8tion.jda.core.requests.RestAction;
 import net.dv8tion.jda.core.requests.restaction.AuditableRestAction;
+import net.kodehawa.mantarobot.MantaroBot;
 import net.kodehawa.mantarobot.data.MantaroData;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public abstract class ShardedJDA implements UnifiedJDA {
@@ -39,14 +42,13 @@ public abstract class ShardedJDA implements UnifiedJDA {
 
     @Override
     public List<User> getUsers() {
-        return distinct(stream().map(JDA::getUsers).flatMap(Collection::stream).collect(Collectors.toList()));
+        return stream().flatMap(j -> j.getUsers().stream()).distinct().collect(Collectors.toList());
     }
 
-    @Override
-    public User getUserById(String id) {
-        List<User> users = distinct(stream().map(jda -> jda.getUserById(id)).filter(Objects::nonNull).collect(Collectors.toList()));
-        return users.size() == 0 ? null : users.get(0);
-    }
+	@Override
+	public User getUserById(String id) {
+		return stream().map(jda -> jda.getUserById(id)).filter(Objects::nonNull).findFirst().orElse( null );
+	}
 
     @Override
     public User getUserById(long id) {
@@ -65,7 +67,7 @@ public abstract class ShardedJDA implements UnifiedJDA {
 
     @Override
     public List<User> getUsersByName(String name, boolean ignoreCase) {
-        return distinct(stream().flatMap(jda -> jda.getUsersByName(name, ignoreCase).stream()).collect(Collectors.toList()));
+        return stream().flatMap(jda -> jda.getUsersByName(name, ignoreCase).stream()).distinct().collect(Collectors.toList());
     }
 
     @Override
@@ -75,17 +77,17 @@ public abstract class ShardedJDA implements UnifiedJDA {
 
     @Override
     public List<Guild> getGuilds() {
-        return stream().map(JDA::getGuilds).flatMap(Collection::stream).distinct().collect(Collectors.toList());
+        return stream().map(JDA::getGuilds).flatMap(Collection::stream).collect(Collectors.toList());
     }
 
     @Override
     public Guild getGuildById(String id) {
-        return stream().map(jda -> jda.getGuildById(id)).filter(Objects::nonNull).findFirst().orElse(null);
+        return MantaroBot.getInstance().getShard((int)(Long.valueOf(id) >> 22 % MantaroBot.getInstance().getShardList().size())).getGuildById(id);
     }
 
     @Override
     public Guild getGuildById(long id) {
-        return stream().map(jda -> jda.getGuildById(id)).filter(Objects::nonNull).findFirst().orElse(null);
+        return MantaroBot.getInstance().getShard((int)(id >> 22 % MantaroBot.getInstance().getShardList().size())).getGuildById(id);
     }
 
     @Override
@@ -115,7 +117,7 @@ public abstract class ShardedJDA implements UnifiedJDA {
 
     @Override
     public List<TextChannel> getTextChannels() {
-        return stream().map(JDA::getTextChannels).flatMap(Collection::stream).distinct().collect(Collectors.toList());
+        return stream().map(JDA::getTextChannels).flatMap(Collection::stream).collect(Collectors.toList());
     }
 
     @Override
@@ -135,7 +137,7 @@ public abstract class ShardedJDA implements UnifiedJDA {
 
     @Override
     public List<VoiceChannel> getVoiceChannels() {
-        return stream().map(JDA::getVoiceChannels).flatMap(Collection::stream).distinct().collect(Collectors.toList());
+        return stream().map(JDA::getVoiceChannels).flatMap(Collection::stream).collect(Collectors.toList());
     }
 
     @Override
@@ -155,7 +157,7 @@ public abstract class ShardedJDA implements UnifiedJDA {
 
     @Override
     public List<PrivateChannel> getPrivateChannels() {
-        return stream().map(JDA::getPrivateChannels).flatMap(Collection::stream).distinct().collect(Collectors.toList());
+        return stream().map(JDA::getPrivateChannels).flatMap(Collection::stream).collect(Collectors.toList());
     }
 
     @Override
@@ -170,7 +172,7 @@ public abstract class ShardedJDA implements UnifiedJDA {
 
     @Override
     public List<Emote> getEmotes() {
-        return stream().map(JDA::getEmotes).flatMap(Collection::stream).distinct().collect(Collectors.toList());
+        return stream().map(JDA::getEmotes).flatMap(Collection::stream).collect(Collectors.toList());
     }
 
     @Override
@@ -224,16 +226,11 @@ public abstract class ShardedJDA implements UnifiedJDA {
         return MantaroData.config().get().maxJdaReconnectDelay;
     }
 
-    private List<User> distinct(List<User> list) {
-        Map<String, List<User>> map = new HashMap<>();
-        list.forEach(user -> map.computeIfAbsent(user != null ? user.getId() : null, k -> new ArrayList<>()).add(user));
+	@Override
+		public List<String> getWebSocketTrace() {
 
-        return map.values().stream()
-                .map(users -> users.size() == 0 ? null : users.size() == 1 ? users.get(0) : new ShardedUser(users, this))
-                .filter(Objects::nonNull)
-                .sorted(Comparator.comparing(ISnowflake::getId))
-                .collect(Collectors.toList());
-    }
+		return  null ; //use the shard-specific one
+	}
 
     @Override
     public AuditableRestAction<Void> installAuxiliaryCable(int port) {
