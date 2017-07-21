@@ -22,12 +22,12 @@ import java.util.function.Function;
 
 @SuppressWarnings("Duplicates")
 public class ReactionOperation {
-	private static final ScheduledExecutorService EXECUTOR = Executors.newSingleThreadScheduledExecutor(
-		new ThreadBuilder().setName("ReactionOperations Executor")
-	);
+    private static final ScheduledExecutorService EXECUTOR = Executors.newSingleThreadScheduledExecutor(
+        new ThreadBuilder().setName("ReactionOperations Executor")
+    );
 
-	private static final Map<String, ReactionOperation> OPERATIONS = new ConcurrentHashMap<>();
-	private static final EventListener LISTENER = new EventListener() {
+    private static final Map<String, ReactionOperation> OPERATIONS = new ConcurrentHashMap<>();
+    private static final EventListener LISTENER = new EventListener() {
         @Override
         public void onEvent(Event e) {
             if (e instanceof MessageReactionAddEvent) {
@@ -104,28 +104,28 @@ public class ReactionOperation {
         }
     };
 
-	public static ReactionOperationBuilder builder() {
-		return new ReactionOperationBuilder();
-	}
+    public static ReactionOperationBuilder builder() {
+        return new ReactionOperationBuilder();
+    }
 
-	public static EventListener listener() {
-		return LISTENER;
-	}
+    public static EventListener listener() {
+        return LISTENER;
+    }
 
-	public static void stopOperation(String messageId) {
-		ReactionOperation operation = OPERATIONS.remove(messageId);
+    public static void stopOperation(String messageId) {
+        ReactionOperation operation = OPERATIONS.remove(messageId);
 
-		if (operation != null) {
-			if (operation.timeoutFuture != null) {
-				operation.timeoutFuture.cancel(true);
-				operation.timeoutFuture = null;
-			}
+        if (operation != null) {
+            if (operation.timeoutFuture != null) {
+                operation.timeoutFuture.cancel(true);
+                operation.timeoutFuture = null;
+            }
 
-			if (operation.onRemoved != null) {
-				operation.onRemoved.run();
-			}
-		}
-	}
+            if (operation.onRemoved != null) {
+                operation.onRemoved.run();
+            }
+        }
+    }
 
     private static void scheduleTimeout(ReactionOperation operation, boolean first) {
         TimeAmount timeAmount = first ? operation.initialTimeout : operation.increasingTimeout;
@@ -142,7 +142,7 @@ public class ReactionOperation {
         );
     }
 
-	private final String messageId;
+    private final String messageId;
     private final TimeAmount initialTimeout;
     private final TimeAmount increasingTimeout;
     private final Function<MessageReactionAddEvent,OperationResult> onReaction;
@@ -152,15 +152,15 @@ public class ReactionOperation {
     private final Runnable onRemoved;
     private Future<?> timeoutFuture;
 
-	ReactionOperation(
-	    Message message, Collection<String> reactions, TimeAmount initialTimeout, TimeAmount increasingTimeout,
+    ReactionOperation(
+        Message message, Collection<String> reactions, TimeAmount initialTimeout, TimeAmount increasingTimeout,
         Function<MessageReactionAddEvent,OperationResult> onReaction,
         Function<MessageReactionRemoveEvent,OperationResult> onReactionRemoved,
         Function<MessageReactionRemoveAllEvent,OperationResult> onAllReactionsRemoved,
         Runnable onTimeout, Runnable onRemoved,
         boolean force
     ) {
-		this.messageId = message.getId();
+        this.messageId = message.getId();
         this.initialTimeout = initialTimeout;
         this.increasingTimeout = increasingTimeout;
         this.onReaction = onReaction;
@@ -170,22 +170,22 @@ public class ReactionOperation {
         this.onRemoved = onRemoved;
 
         if (!force && OPERATIONS.containsKey(messageId))
-			throw new IllegalStateException("Operation already happening at messageId");
+            throw new IllegalStateException("Operation already happening at messageId");
 
-		OPERATIONS.put(messageId, this);
+        OPERATIONS.put(messageId, this);
 
         scheduleTimeout(this, true);
 
-		if (!reactions.isEmpty()) {
-			Iterator<String> iterator = reactions.iterator();
-			Holder<Consumer<Void>> chain = new Holder<>();
-			chain.value = nil -> {
-				if (iterator.hasNext()) {
-					message.addReaction(iterator.next()).queue(chain.value);
-				}
-			};
+        if (!reactions.isEmpty()) {
+            Iterator<String> iterator = reactions.iterator();
+            Holder<Consumer<Void>> chain = new Holder<>();
+            chain.value = nil -> {
+                if (iterator.hasNext()) {
+                    message.addReaction(iterator.next()).queue(chain.value);
+                }
+            };
 
-			message.clearReactions().queue(chain.value);
-		}
-	}
+            message.clearReactions().queue(chain.value);
+        }
+    }
 }

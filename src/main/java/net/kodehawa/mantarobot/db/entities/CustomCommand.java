@@ -23,48 +23,48 @@ import static net.kodehawa.mantarobot.data.MantaroData.conn;
 @ToString
 @RequiredArgsConstructor
 public class CustomCommand implements ManagedObject {
-	public static final String DB_TABLE = "commands";
-	private final Set<String> authors;
-	private final String id, commandName, guildId;
-	private final List<String> values;
+    public static final String DB_TABLE = "commands";
+    private final Set<String> authors;
+    private final String id, commandName, guildId;
+    private final List<String> values;
 
-	public CustomCommand(String name, String guildId) {
-		this.id = String.valueOf(ManagedDatabase.ID_WORKER.generate());
+    public CustomCommand(String name, String guildId) {
+        this.id = String.valueOf(ManagedDatabase.ID_WORKER.generate());
 
-		this.commandName = name;
-		this.guildId = guildId;
+        this.commandName = name;
+        this.guildId = guildId;
 
-		this.authors = new HashSet<>();
-		this.values = new LinkedList<>();
-	}
+        this.authors = new HashSet<>();
+        this.values = new LinkedList<>();
+    }
 
-	@Override
-	public void delete() {
-		r.table(DB_TABLE).get(getId()).delete().run(conn());
-	}
+    @Override
+    public void delete() {
+        r.table(DB_TABLE).get(getId()).delete().run(conn());
+    }
 
-	@Override
-	public void save() {
-		r.table(DB_TABLE).insert(this)
-			.optArg("conflict", "replace")
-			.run(conn());
-	}
+    @Override
+    public void save() {
+        r.table(DB_TABLE).insert(this)
+            .optArg("conflict", "replace")
+            .run(conn());
+    }
 
-	public List<String> values() {
-		return new CustomCommandList(values);
-	}
+    public List<String> values() {
+        return new CustomCommandList(values);
+    }
 
-	public CustomCommand exportToGuild(String guildId) {
-		CustomCommand exported = new CustomCommand(commandName, guildId);
-		exported.authors.addAll(authors);
-		exported.values.addAll(values);
-		return exported;
-	}
+    public CustomCommand exportToGuild(String guildId) {
+        CustomCommand exported = new CustomCommand(commandName, guildId);
+        exported.authors.addAll(authors);
+        exported.values.addAll(values);
+        return exported;
+    }
 
-	public CustomCommand rename(String newName) {
-		CustomCommand exported = new CustomCommand(newName, guildId);
-		exported.authors.addAll(authors);
-		exported.values.addAll(values);
-		return exported;
-	}
+    public CustomCommand rename(String newName) {
+        CustomCommand exported = new CustomCommand(newName, guildId);
+        exported.authors.addAll(authors);
+        exported.values.addAll(values);
+        return exported;
+    }
 }

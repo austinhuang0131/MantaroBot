@@ -131,14 +131,14 @@ public class MantaroBot extends ShardedJDA {
                 "tag:value"
         );
 
-		/*statsClient.recordEvent(
+        /*statsClient.recordEvent(
                 Event.builder()
-						.withTitle("startup")
-						.withText("Started up Mantaro")
-						.withDate(new Date())
-						.withPriority(Event.Priority.LOW)
-						.build()
-		);*/
+                        .withTitle("startup")
+                        .withText("Started up Mantaro")
+                        .withDate(new Date())
+                        .withPriority(Event.Priority.LOW)
+                        .build()
+        );*/
 
         new BannerPrinter(1).printBanner();
 

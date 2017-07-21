@@ -42,9 +42,9 @@ public class ConnectionWatcherDataManager implements DataManager<ConnectionWatch
                             case "shutdown":
                                 //TODO re-enable
                                 /*MantaroBot.getInstance().getAudioManager().getMusicManagers().forEach((s, musicManager) -> {
-									if (musicManager.getTrackScheduler() != null)
-										musicManager.getTrackScheduler().stop();
-								});*/
+                                    if (musicManager.getTrackScheduler() != null)
+                                        musicManager.getTrackScheduler().stop();
+                                });*/
 
                                 Arrays.stream(MantaroBot.getInstance().getShardedMantaro().getShards()).forEach(MantaroShard::prepareShutdown);
 
