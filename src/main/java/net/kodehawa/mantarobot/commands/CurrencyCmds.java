@@ -597,7 +597,7 @@ public class CurrencyCmds {
                 }
 
                 User user = event.getMessage().getMentionedUsers().get(0);
-                if (user.isBot() && !user.getId().equals("224662505157427200")) {
+                if (user.isBot()) {
                     event.getChannel().sendMessage(EmoteReference.ERROR + "You cannot transfer money to a bot.").queue();
                     return;
                 }
@@ -617,11 +617,6 @@ public class CurrencyCmds {
                     transferPlayer.removeMoney(toSend);
                     transferPlayer.save();
                     toTransfer.save();
-
-                    if (user.getId().equals("224662505157427200")) {
-                        MantaroBot.getInstance().getTextChannelById(329013929890283541L).
-                                sendMessage(event.getAuthor().getId() + " transferred **" + toSend + "** to you successfully.").queue();
-                    }
 
                     event.getChannel().sendMessage(EmoteReference.CORRECT + "Transferred **" + toSend + "** to *" + event.getMessage()
                             .getMentionedUsers().get(0).getName() + "* successfully.").queue();
