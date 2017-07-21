@@ -2,6 +2,7 @@ package net.kodehawa.mantarobot.shard;
 
 import br.com.brjdevs.java.utils.async.Async;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory;
 import lombok.Getter;
 import lombok.experimental.Delegate;
 import net.dv8tion.jda.core.AccountType;

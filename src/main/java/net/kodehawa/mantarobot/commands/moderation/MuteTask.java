@@ -3,9 +3,9 @@ package net.kodehawa.mantarobot.commands.moderation;
 import net.dv8tion.jda.core.entities.Guild;
 import net.kodehawa.mantarobot.MantaroBot;
 import net.kodehawa.mantarobot.data.MantaroData;
-import net.kodehawa.mantarobot.db.entities.DBGuild;
-import net.kodehawa.mantarobot.db.entities.MantaroObj;
-import net.kodehawa.mantarobot.db.entities.helpers.GuildData;
+import net.kodehawa.mantarobot.db.entities.GuildData;
+import net.kodehawa.mantarobot.db.entities.MantaroObject;
+import net.kodehawa.mantarobot.db.entities.helpers.ExtraGuildData;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Map;
@@ -14,7 +14,7 @@ public class MuteTask implements Runnable {
 
     @Override
     public void run() {
-        MantaroObj data = MantaroData.db().getMantaroData();
+        MantaroObject data = MantaroData.db().getMantaroData();
         System.out.println(data.getMutes());
         for (Map.Entry<Long, Pair<String, Long>> entry : data.getMutes().entrySet())
         {
@@ -24,8 +24,8 @@ public class MuteTask implements Runnable {
                 String guildId = pair.getKey();
                 long maxTime = pair.getValue();
                 Guild guild = MantaroBot.getInstance().getGuildById(guildId);
-                DBGuild dbGuild = MantaroData.db().getGuild(guildId);
-                GuildData guildData = dbGuild.getData();
+                GuildData dbGuild = MantaroData.db().getGuild(guildId);
+                ExtraGuildData guildData = dbGuild.getData();
 
                 System.out.println(id + " | {" + guildId + " " + maxTime + "}");
                 if (guild == null) {

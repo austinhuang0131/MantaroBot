@@ -621,7 +621,7 @@ public class UtilsCmds {
         });
     }
 
-	protectedstatic String dateGMT(Guild guild, String tz) {
+	protected static String dateGMT(Guild guild, String tz) {
 		DateFormat format = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss");
 		Date date = new Date();
 

@@ -112,6 +112,7 @@ public class MantaroDataPorter {
         mantaro.getBlackListedGuilds().addAll(obj.getBlackListedGuilds());
         mantaro.getBlackListedUsers().addAll(obj.getBlackListedUsers());
         mantaro.getTempBans().putAll(obj.getTempBans());
+        mantaro.getMutes().putAll(obj.getMutes());
         mantaro.saveAsync();
 
         log(" DONE.");

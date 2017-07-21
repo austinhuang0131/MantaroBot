@@ -1,14 +1,11 @@
 package net.kodehawa.mantarobot.commands;
 
-import br.com.brjdevs.java.utils.async.Async;
 import com.google.common.eventbus.Subscribe;
 import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import net.kodehawa.mantarobot.MantaroBot;
 import net.kodehawa.mantarobot.commands.moderation.ModLog;
 import net.kodehawa.mantarobot.commands.moderation.MuteTask;
 import net.kodehawa.mantarobot.data.MantaroData;
@@ -77,7 +74,7 @@ public class MuteCmds {
                 //Regex from: Fabricio20
                 final String finalReason = reason.replaceAll("-time (\\d+)((?:h(?:our(?:s)?)?)|(?:m(?:in(?:ute(?:s)?)?)?)|(?:s(?:ec(?:ond(?:s)?)?)?))", "");
 
-                MantaroObj data = db.getMantaroData();
+                MantaroObject data = db.getMantaroData();
 
                 event.getMessage().getMentionedUsers().forEach(user -> {
                     Member m = event.getGuild().getMember(user);

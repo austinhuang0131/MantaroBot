@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import net.dv8tion.jda.core.entities.Message;
+import net.kodehawa.mantarobot.MantaroBot;
 import net.kodehawa.mantarobot.db.ManagedObject;
 
 import static com.rethinkdb.RethinkDB.r;
@@ -43,6 +44,7 @@ public class QuotedMessage implements ManagedObject {
     @Override
     public void delete() {
         r.table(DB_TABLE).get(getId()).delete().run(conn());
+        MantaroBot.getInstance().getStatsClient().increment("database_hits");
     }
 
     @Override
@@ -50,5 +52,6 @@ public class QuotedMessage implements ManagedObject {
         r.table(DB_TABLE).insert(this)
             .optArg("conflict", "replace")
             .run(conn());
+        MantaroBot.getInstance().getStatsClient().increment("database_hits");
     }
 }

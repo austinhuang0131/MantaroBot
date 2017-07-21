@@ -45,10 +45,10 @@ public abstract class ShardedJDA implements UnifiedJDA {
         return stream().flatMap(j -> j.getUsers().stream()).distinct().collect(Collectors.toList());
     }
 
-	@Override
-	public User getUserById(String id) {
-		return stream().map(jda -> jda.getUserById(id)).filter(Objects::nonNull).findFirst().orElse( null );
-	}
+    @Override
+    public User getUserById(String id) {
+        return stream().map(jda -> jda.getUserById(id)).filter(Objects::nonNull).findFirst().orElse(null);
+    }
 
     @Override
     public User getUserById(long id) {
@@ -82,12 +82,12 @@ public abstract class ShardedJDA implements UnifiedJDA {
 
     @Override
     public Guild getGuildById(String id) {
-        return MantaroBot.getInstance().getShard((int)(Long.valueOf(id) >> 22 % MantaroBot.getInstance().getShardList().size())).getGuildById(id);
+        return MantaroBot.getInstance().getShard((int) (Long.valueOf(id) >> 22 % MantaroBot.getInstance().getShardList().size())).getGuildById(id);
     }
 
     @Override
     public Guild getGuildById(long id) {
-        return MantaroBot.getInstance().getShard((int)(id >> 22 % MantaroBot.getInstance().getShardList().size())).getGuildById(id);
+        return MantaroBot.getInstance().getShard((int) (id >> 22 % MantaroBot.getInstance().getShardList().size())).getGuildById(id);
     }
 
     @Override
@@ -217,6 +217,11 @@ public abstract class ShardedJDA implements UnifiedJDA {
     }
 
     @Override
+    public AuditableRestAction<Void> installAuxiliaryCable(int port) {
+        return null;
+    }
+
+    @Override
     public Status[] getShardStatus() {
         return stream().map(JDA::getStatus).toArray(Status[]::new);
     }
@@ -226,14 +231,8 @@ public abstract class ShardedJDA implements UnifiedJDA {
         return MantaroData.config().get().maxJdaReconnectDelay;
     }
 
-	@Override
-		public List<String> getWebSocketTrace() {
-
-		return  null ; //use the shard-specific one
-	}
-
     @Override
-    public AuditableRestAction<Void> installAuxiliaryCable(int port) {
-        return null;
+    public List<String> getWebSocketTrace() {
+        return null; //use the shard-specific one
     }
 }

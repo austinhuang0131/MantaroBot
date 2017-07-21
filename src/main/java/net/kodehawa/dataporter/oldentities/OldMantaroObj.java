@@ -2,10 +2,8 @@ package net.kodehawa.dataporter.oldentities;
 
 import lombok.Data;
 import net.kodehawa.mantarobot.db.ManagedObject;
+import org.apache.commons.lang3.tuple.Pair;
 
-import java.beans.ConstructorProperties;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,17 +18,7 @@ public class OldMantaroObj implements ManagedObject {
     public List<String> blackListedUsers = null;
     public List<String> patreonUsers = null;
     private Map<String, Long> tempBans = null;
-    @ConstructorProperties({"blackListedGuilds", "blackListedUsers", "patreonUsers", "tempbans"})
-    public OldMantaroObj(List<String> blackListedGuilds, List<String> blackListedUsers, List<String> patreonUsers, Map<String, Long> tempBans) {
-        this.blackListedGuilds = blackListedGuilds;
-        this.blackListedUsers = blackListedUsers;
-        this.patreonUsers = patreonUsers;
-        this.tempBans = tempBans;
-    }
-
-    public static OldMantaroObj create() {
-        return new OldMantaroObj(new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new HashMap<>());
-    }
+    private Map<Long, Pair<String, Long>> mutes = null;
 
     @Override
     public void delete() {

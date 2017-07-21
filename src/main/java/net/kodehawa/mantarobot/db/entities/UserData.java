@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import net.dv8tion.jda.core.entities.User;
+import net.kodehawa.mantarobot.MantaroBot;
 import net.kodehawa.mantarobot.commands.currency.item.ItemStack;
 import net.kodehawa.mantarobot.commands.currency.item.Items;
 import net.kodehawa.mantarobot.data.MantaroData;
@@ -50,6 +51,7 @@ public class UserData implements ManagedObject {
     @Override
     public void delete() {
         r.table(DB_TABLE).get(getId()).delete().run(conn());
+        MantaroBot.getInstance().getStatsClient().increment("database_hits");
     }
 
     @Override
@@ -57,6 +59,7 @@ public class UserData implements ManagedObject {
         r.table(DB_TABLE).insert(this)
             .optArg("conflict", "replace")
             .run(conn());
+        MantaroBot.getInstance().getStatsClient().increment("database_hits");
     }
 
     public boolean addMoney(@Nonnegative long money) {
@@ -77,6 +80,11 @@ public class UserData implements ManagedObject {
     }
 
     @JsonIgnore
+    public Marriage getMarriage() {
+        return MantaroData.db().getMarriage(this.id);
+    }
+
+    @JsonIgnore
     public long getPremiumLeft() {
         return isPremium() ? this.premiumUntil - currentTimeMillis() : 0;
     }
@@ -94,6 +102,18 @@ public class UserData implements ManagedObject {
         return new Inventory(inventory);
     }
 
+    //it's 3am and i cba to replace usages of this so whatever
+    //now it's 8am and I also cba to replace usages of this so whatever²
+    @JsonIgnore
+    public boolean isLocked() {
+        return data.getLockedUntil() - System.currentTimeMillis() > 0;
+    }
+
+    @JsonIgnore
+    public void setLocked(boolean locked) {
+        data.setLockedUntil(locked ? System.currentTimeMillis() + 30000 : 0);
+    }
+
     @JsonIgnore
     public boolean isPremium() {
         return currentTimeMillis() < premiumUntil;
@@ -105,24 +125,7 @@ public class UserData implements ManagedObject {
         return true;
     }
 
-    @JsonIgnore
-    public Marriage getMarriage() {
-        return MantaroData.db().getMarriage(this.id);
-    }
-
     public void setMoney(long money) {
         this.money = Math.max(0, money);
-    }
-
-    //it's 3am and i cba to replace usages of this so whatever
-    //now it's 8am and I also cba to replace usages of this so whatever²
-    @JsonIgnore
-    public boolean isLocked() {
-        return data.getLockedUntil() - System.currentTimeMillis() > 0;
-    }
-
-    @JsonIgnore
-    public void setLocked(boolean locked) {
-        data.setLockedUntil(locked ? System.currentTimeMillis() + 30000 : 0);
     }
 }

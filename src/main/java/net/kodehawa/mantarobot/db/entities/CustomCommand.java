@@ -3,8 +3,8 @@ package net.kodehawa.mantarobot.db.entities;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
-import net.kodehawa.mantarobot.db.ManagedDatabase;
 import net.kodehawa.mantarobot.MantaroBot;
+import net.kodehawa.mantarobot.db.ManagedDatabase;
 import net.kodehawa.mantarobot.db.ManagedObject;
 import net.kodehawa.mantarobot.db.entities.helpers.CustomCommandList;
 
@@ -39,20 +39,18 @@ public class CustomCommand implements ManagedObject {
         this.values = new LinkedList<>();
     }
 
-	@Override
-	public void delete() {
-		r.table(DB_TABLE).get(getId()).delete().run(conn());
-	MantaroBot.getInstance().getStatsClient().increment("database_hits");}
+    @Override
+    public void delete() {
+        r.table(DB_TABLE).get(getId()).delete().run(conn());
+        MantaroBot.getInstance().getStatsClient().increment("database_hits");
+    }
 
-	@Override
-	public void save() {
-		r.table(DB_TABLE).insert(this)
-			.optArg("conflict", "replace")
-			.run(conn());
-	MantaroBot.getInstance().getStatsClient().increment("database_hits");}
-
-    public List<String> values() {
-        return new CustomCommandList(values);
+    @Override
+    public void save() {
+        r.table(DB_TABLE).insert(this)
+            .optArg("conflict", "replace")
+            .run(conn());
+        MantaroBot.getInstance().getStatsClient().increment("database_hits");
     }
 
     public CustomCommand exportToGuild(String guildId) {
@@ -67,5 +65,9 @@ public class CustomCommand implements ManagedObject {
         exported.authors.addAll(authors);
         exported.values.addAll(values);
         return exported;
+    }
+
+    public List<String> values() {
+        return new CustomCommandList(values);
     }
 }
