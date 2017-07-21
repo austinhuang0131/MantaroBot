@@ -40,17 +40,31 @@ public class CustomCommand implements ManagedObject {
 
 	@Override
 	public void delete() {
-		r.table(DB_TABLE).get(getId()).delete().runNoReply(conn());
+		r.table(DB_TABLE).get(getId()).delete().run(conn());
 	}
 
 	@Override
 	public void save() {
 		r.table(DB_TABLE).insert(this)
 			.optArg("conflict", "replace")
-			.runNoReply(conn());
+			.run(conn());
 	}
 
 	public List<String> values() {
 		return new CustomCommandList(values);
+	}
+
+	public CustomCommand exportToGuild(String guildId) {
+		CustomCommand exported = new CustomCommand(commandName, guildId);
+		exported.authors.addAll(authors);
+		exported.values.addAll(values);
+		return exported;
+	}
+
+	public CustomCommand rename(String newName) {
+		CustomCommand exported = new CustomCommand(newName, guildId);
+		exported.authors.addAll(authors);
+		exported.values.addAll(values);
+		return exported;
 	}
 }

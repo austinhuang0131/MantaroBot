@@ -8,13 +8,13 @@ import net.kodehawa.mantarobot.utils.TimeAmount;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
+import java.util.function.Function;
 
 public class InteractiveOperationBuilder {
 	private String channelId;
 	private TimeAmount increasingTimeout;
 	private TimeAmount initialTimeout;
-	private Predicate<GuildMessageReceivedEvent> onMessage;
+	private Function<GuildMessageReceivedEvent,OperationResult> onMessage;
 	private Runnable onTimeout, onRemoved;
 
 	InteractiveOperationBuilder() {
@@ -80,7 +80,7 @@ public class InteractiveOperationBuilder {
 		return this;
 	}
 
-	public InteractiveOperationBuilder onMessage(Predicate<GuildMessageReceivedEvent> onMessage) {
+	public InteractiveOperationBuilder onMessage(Function<GuildMessageReceivedEvent,OperationResult> onMessage) {
 		this.onMessage = onMessage;
 		return this;
 	}

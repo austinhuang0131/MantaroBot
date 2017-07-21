@@ -12,7 +12,7 @@ import net.kodehawa.mantarobot.commands.game.core.GameLobby;
 import net.kodehawa.mantarobot.commands.game.core.ImageGame;
 import net.kodehawa.mantarobot.core.listeners.operations.old.InteractiveOperationListener;
 import net.kodehawa.mantarobot.core.listeners.operations.old.InteractiveOperations;
-import net.kodehawa.dataporter.oldentities.OldPlayer;
+import net.kodehawa.mantarobot.db.entities.UserData;
 import net.kodehawa.mantarobot.utils.Utils;
 import net.kodehawa.mantarobot.utils.commands.EmoteReference;
 import net.kodehawa.mantarobot.utils.data.DataManager;
@@ -38,7 +38,7 @@ public class Character extends ImageGame {
 	}
 
 	@Override
-	public void call(GameLobby lobby, HashMap<Member, OldPlayer> players) {
+	public void call(GameLobby lobby, HashMap<Member, UserData> players) {
 		InteractiveOperations.createOverriding(lobby.getChannel(), 120, new InteractiveOperationListener() {
 			@Override
 			public int run(GuildMessageReceivedEvent e) {

@@ -8,6 +8,7 @@ import lombok.ToString;
 import net.dv8tion.jda.core.entities.User;
 import net.kodehawa.mantarobot.commands.currency.item.ItemStack;
 import net.kodehawa.mantarobot.commands.currency.item.Items;
+import net.kodehawa.mantarobot.data.MantaroData;
 import net.kodehawa.mantarobot.db.ManagedObject;
 import net.kodehawa.mantarobot.db.entities.helpers.ExtraUserData;
 import net.kodehawa.mantarobot.db.entities.helpers.Inventory;
@@ -48,14 +49,14 @@ public class UserData implements ManagedObject {
 
 	@Override
 	public void delete() {
-		r.table(DB_TABLE).get(getId()).delete().runNoReply(conn());
+		r.table(DB_TABLE).get(getId()).delete().run(conn());
 	}
 
 	@Override
 	public void save() {
 		r.table(DB_TABLE).insert(this)
 			.optArg("conflict", "replace")
-			.runNoReply(conn());
+			.run(conn());
 	}
 
 	public boolean addMoney(@Nonnegative long money) {
@@ -98,7 +99,30 @@ public class UserData implements ManagedObject {
 		return currentTimeMillis() < premiumUntil;
 	}
 
+	public boolean removeMoney(long money) {
+		if (this.money - money < 0) return false;
+		this.money -= money;
+		return true;
+	}
+
+	@JsonIgnore
+	public Marriage getMarriage() {
+		return MantaroData.db().getMarriage(this.id);
+	}
+
 	public void setMoney(long money) {
 		this.money = Math.max(0, money);
+	}
+
+	//it's 3am and i cba to replace usages of this so whatever
+	//now it's 8am and I also cba to replace usages of this so whatever²
+	@JsonIgnore
+	public boolean isLocked() {
+		return data.getLockedUntil() - System.currentTimeMillis() > 0;
+	}
+
+	@JsonIgnore
+	public void setLocked(boolean locked) {
+		data.setLockedUntil(locked ? System.currentTimeMillis() + 30000 : 0);
 	}
 }

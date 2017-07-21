@@ -9,7 +9,7 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.kodehawa.mantarobot.options.Option;
 import net.kodehawa.mantarobot.options.OptionType;
 import net.kodehawa.mantarobot.data.MantaroData;
-import net.kodehawa.dataporter.oldentities.OldGuild;
+import net.kodehawa.mantarobot.db.entities.GuildData;
 import net.kodehawa.mantarobot.db.entities.helpers.ExtraGuildData;
 import net.kodehawa.mantarobot.modules.CommandRegistry;
 import net.kodehawa.mantarobot.modules.Module;
@@ -124,7 +124,7 @@ public class OptsCmd {
 		}).addOption("check:data", new Option("Data check.",
 				"Checks the data values you have set on this server. **THIS IS NOT USER-FRIENDLY**", OptionType.GENERAL)
 		.setAction(event -> {
-			OldGuild dbGuild = MantaroData.db().getGuild(event.getGuild());
+			GuildData dbGuild = MantaroData.db().getGuild(event.getGuild());
 			ExtraGuildData guildData = dbGuild.getData();
 			//Map as follows: name, value
 			Map<String, Object> fieldMap = mapObjects(guildData);

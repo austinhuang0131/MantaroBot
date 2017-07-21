@@ -3,7 +3,7 @@ package net.kodehawa.mantarobot.options.opts;
 import com.google.common.eventbus.Subscribe;
 import net.dv8tion.jda.core.entities.ISnowflake;
 import net.dv8tion.jda.core.entities.TextChannel;
-import net.kodehawa.dataporter.oldentities.OldGuild;
+import net.kodehawa.mantarobot.db.entities.GuildData;
 import net.kodehawa.mantarobot.MantaroBot;
 import net.kodehawa.mantarobot.core.listeners.command.CommandListener;
 import net.kodehawa.mantarobot.data.MantaroData;
@@ -53,7 +53,7 @@ public class CommandOptions extends OptionHandler{
                                 .queue();
                         return;
                     }
-                    OldGuild dbGuild = MantaroData.db().getGuild(event.getGuild());
+                    GuildData dbGuild = MantaroData.db().getGuild(event.getGuild());
                     ExtraGuildData guildData = dbGuild.getData();
                     guildData.getDisabledCommands().add(commandName);
                     event.getChannel().sendMessage(EmoteReference.MEGA + "Disabled " + commandName + " on this server.").queue();
@@ -74,7 +74,7 @@ public class CommandOptions extends OptionHandler{
                         event.getChannel().sendMessage(EmoteReference.ERROR + "No command called " + commandName).queue();
                         return;
                     }
-                    OldGuild dbGuild = MantaroData.db().getGuild(event.getGuild());
+                    GuildData dbGuild = MantaroData.db().getGuild(event.getGuild());
                     ExtraGuildData guildData = dbGuild.getData();
                     guildData.getDisabledCommands().remove(commandName);
                     event.getChannel().sendMessage(EmoteReference.MEGA + "Enabled " + commandName + " on this server.").queue();
@@ -115,7 +115,7 @@ public class CommandOptions extends OptionHandler{
                         return;
                     }
 
-                    OldGuild dbGuild = MantaroData.db().getGuild(event.getGuild());
+                    GuildData dbGuild = MantaroData.db().getGuild(event.getGuild());
                     ExtraGuildData guildData = dbGuild.getData();
 
                     String id = event.getGuild().getTextChannelsByName(channelName, true).get(0).getId();
@@ -155,7 +155,7 @@ public class CommandOptions extends OptionHandler{
                         return;
                     }
 
-                    OldGuild dbGuild = MantaroData.db().getGuild(event.getGuild());
+                    GuildData dbGuild = MantaroData.db().getGuild(event.getGuild());
                     ExtraGuildData guildData = dbGuild.getData();
                     String id = event.getGuild().getTextChannelsByName(channelName, true).get(0).getId();
 
@@ -178,7 +178,7 @@ public class CommandOptions extends OptionHandler{
                         return;
                     }
 
-                    OldGuild dbGuild = MantaroData.db().getGuild(event.getGuild());
+                    GuildData dbGuild = MantaroData.db().getGuild(event.getGuild());
                     ExtraGuildData guildData = dbGuild.getData();
 
                     if (args[0].equals("*")) {
@@ -222,7 +222,7 @@ public class CommandOptions extends OptionHandler{
                         return;
                     }
 
-                    OldGuild dbGuild = MantaroData.db().getGuild(event.getGuild());
+                    GuildData dbGuild = MantaroData.db().getGuild(event.getGuild());
                     ExtraGuildData guildData = dbGuild.getData();
 
                     if (args[0].equals("*")) {
@@ -257,7 +257,7 @@ public class CommandOptions extends OptionHandler{
                         return;
                     }
 
-                    OldGuild dbGuild = MantaroData.db().getGuild(event.getGuild());
+                    GuildData dbGuild = MantaroData.db().getGuild(event.getGuild());
                     ExtraGuildData guildData = dbGuild.getData();
                     Category toDisable = Category.lookupFromString(args[0]);
 
@@ -292,7 +292,7 @@ public class CommandOptions extends OptionHandler{
                         return;
                     }
 
-                    OldGuild dbGuild = MantaroData.db().getGuild(event.getGuild());
+                    GuildData dbGuild = MantaroData.db().getGuild(event.getGuild());
                     ExtraGuildData guildData = dbGuild.getData();
                     Category toEnable = Category.lookupFromString(args[0]);
 
@@ -317,7 +317,7 @@ public class CommandOptions extends OptionHandler{
                         return;
                     }
 
-                    OldGuild dbGuild = MantaroData.db().getGuild(event.getGuild());
+                    GuildData dbGuild = MantaroData.db().getGuild(event.getGuild());
                     ExtraGuildData guildData = dbGuild.getData();
                     Category toDisable = Category.lookupFromString(args[0]);
                     String where = args[1];
@@ -361,7 +361,7 @@ public class CommandOptions extends OptionHandler{
                         return;
                     }
 
-                    OldGuild dbGuild = MantaroData.db().getGuild(event.getGuild());
+                    GuildData dbGuild = MantaroData.db().getGuild(event.getGuild());
                     ExtraGuildData guildData = dbGuild.getData();
                     Category toEnable = Category.lookupFromString(args[0]);
                     String where = args[1];

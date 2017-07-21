@@ -10,6 +10,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+@Deprecated
 public class InteractiveOperations {
     private static final EventListener LISTENER = new InteractiveListener();
 
@@ -25,20 +26,6 @@ public class InteractiveOperations {
     public static Future<Void> get(long channelId) {
         RunningOperation o = OPERATIONS.get(channelId);
         return o == null ? null : o.future;
-    }
-
-    public static Future<Void> createOrGet(MessageChannel channel, long timeoutSeconds, InteractiveOperationListener operation) {
-        return createOrGet(channel.getIdLong(), timeoutSeconds, operation);
-    }
-
-    public static Future<Void> createOrGet(long channelId, long timeoutSeconds, InteractiveOperationListener operation) {
-        if(timeoutSeconds < 1) throw new IllegalArgumentException("Timeout < 1");
-        if(operation == null) throw new NullPointerException("operation");
-        RunningOperation o = OPERATIONS.get(channelId);
-        if(o != null) return o.future;
-        o = new RunningOperation(operation, new OperationFuture(channelId));
-        OPERATIONS.put(channelId, o, timeoutSeconds, TimeUnit.SECONDS);
-        return o.future;
     }
 
     public static Future<Void> create(MessageChannel channel, long timeoutSeconds, InteractiveOperationListener operation) {

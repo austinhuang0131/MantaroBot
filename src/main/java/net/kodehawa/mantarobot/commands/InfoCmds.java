@@ -5,7 +5,7 @@ import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.OnlineStatus;
 import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import net.kodehawa.dataporter.oldentities.OldGuild;
+import net.kodehawa.mantarobot.db.entities.GuildData;
 import net.kodehawa.mantarobot.MantaroBot;
 import net.kodehawa.mantarobot.MantaroInfo;
 import net.kodehawa.mantarobot.commands.currency.TextChannelGround;
@@ -227,7 +227,7 @@ public class InfoCmds {
 				if (content.isEmpty()) {
 					String defaultPrefix = MantaroData.config().get().prefix[0], guildPrefix = MantaroData.db().getGuild(event.getGuild()).getData().getGuildCustomPrefix();
 					String prefix = guildPrefix == null ? defaultPrefix : guildPrefix;
-					OldGuild dbGuild = MantaroData.db().getGuild(event.getGuild());
+					GuildData dbGuild = MantaroData.db().getGuild(event.getGuild());
 					ExtraGuildData guildData = dbGuild.getData();
 
 					EmbedBuilder embed = baseEmbed(event, "MantaroBot Help")

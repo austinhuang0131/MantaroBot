@@ -11,7 +11,7 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.kodehawa.mantarobot.commands.music.GuildMusicManager;
 import net.kodehawa.mantarobot.commands.music.utils.AudioUtils;
 import net.kodehawa.mantarobot.data.MantaroData;
-import net.kodehawa.dataporter.oldentities.OldGuild;
+import net.kodehawa.mantarobot.db.entities.GuildData;
 import net.kodehawa.mantarobot.db.entities.helpers.ExtraGuildData;
 import net.kodehawa.mantarobot.utils.DiscordUtils;
 import net.kodehawa.mantarobot.utils.SentryHelper;
@@ -110,7 +110,7 @@ public class AudioLoader implements AudioLoadResultHandler {
     private void loadSingle(AudioTrack audioTrack, boolean silent) {
         AudioTrackInfo trackInfo = audioTrack.getInfo();
         audioTrack.setUserData(event.getAuthor().getId());
-        OldGuild dbGuild = MantaroData.db().getGuild(event.getGuild());
+        GuildData dbGuild = MantaroData.db().getGuild(event.getGuild());
         ExtraGuildData guildData = dbGuild.getData();
 
         String title = trackInfo.title;

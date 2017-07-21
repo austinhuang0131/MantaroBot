@@ -1,4 +1,4 @@
-package net.kodehawa.mantarobot.db.entities.helpers;
+package net.kodehawa.dataporter.oldentities;
 
 import lombok.Data;
 
@@ -10,7 +10,7 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 
 @Data
-public class ExtraPlayerData {
+public class OldPlayerData {
 	public long experience = 0;
 	private String description = null;
 	private Long marriedSince = null;

@@ -15,8 +15,8 @@ import net.kodehawa.mantarobot.commands.utils.UrbanData;
 import net.kodehawa.mantarobot.commands.utils.WeatherData;
 import net.kodehawa.mantarobot.commands.utils.YoutubeMp3Info;
 import net.kodehawa.mantarobot.data.MantaroData;
-import net.kodehawa.dataporter.oldentities.OldGuild;
-import net.kodehawa.dataporter.oldentities.OldUser;
+import net.kodehawa.mantarobot.db.entities.GuildData;
+import net.kodehawa.mantarobot.db.entities.UserData;
 import net.kodehawa.mantarobot.db.entities.helpers.ExtraGuildData;
 import net.kodehawa.mantarobot.modules.CommandRegistry;
 import net.kodehawa.mantarobot.modules.Module;
@@ -50,7 +50,7 @@ public class UtilsCmds {
 			@Override
 			protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
 				SimpleDateFormat format1 = new SimpleDateFormat("dd-MM-yyyy");
-				OldUser user = MantaroData.db().getUser(event.getAuthor());
+				UserData user = MantaroData.db().getUser(event.getAuthor());
 				if (content.isEmpty()) {
 					onError(event);
 					return;
@@ -365,7 +365,7 @@ public class UtilsCmds {
 				try {
 					content = content.replace("UTC", "GMT");
 
-					OldUser user = MantaroData.db().getUser(event.getMember());
+					UserData user = MantaroData.db().getUser(event.getMember());
 					if (user.getData().getTimezone() != null && args.length == 0) {
 						event.getChannel().sendMessage(
 							EmoteReference.MEGA + "It's " + dateGMT(event.getGuild(), user.getData().getTimezone()) +
@@ -625,7 +625,7 @@ public class UtilsCmds {
 		DateFormat format = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss");
 		Date date = new Date();
 
-		OldGuild dbGuild = MantaroData.db().getGuild(guild.getId());
+		GuildData dbGuild = MantaroData.db().getGuild(guild.getId());
 		ExtraGuildData guildData = dbGuild.getData();
 
 		if(guildData.getTimeDisplay() == 1){

@@ -19,7 +19,7 @@ public class PlayedSong implements ManagedObject {
 				arg1.g("timesPlayed").add(1);
 				return arg1;
 			})
-			.runNoReply(conn());
+			.run(conn());
 	}
 
 	private final String id;
@@ -27,13 +27,13 @@ public class PlayedSong implements ManagedObject {
 
 	@Override
 	public void delete() {
-		r.table(DB_TABLE).get(getId()).delete().runNoReply(conn());
+		r.table(DB_TABLE).get(getId()).delete().run(conn());
 	}
 
 	@Override
 	public void save() {
 		r.table(DB_TABLE).insert(this)
 			.optArg("conflict", "replace")
-			.runNoReply(conn());
+			.run(conn());
 	}
 }

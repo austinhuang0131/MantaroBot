@@ -8,7 +8,7 @@ import net.kodehawa.mantarobot.options.OptionType;
 import net.kodehawa.mantarobot.options.annotations.Option;
 import net.kodehawa.mantarobot.options.event.OptionRegistryEvent;
 import net.kodehawa.mantarobot.data.MantaroData;
-import net.kodehawa.dataporter.oldentities.OldGuild;
+import net.kodehawa.mantarobot.db.entities.GuildData;
 import net.kodehawa.mantarobot.db.entities.helpers.ExtraGuildData;
 import net.kodehawa.mantarobot.modules.commands.SimpleCommand;
 import net.kodehawa.mantarobot.utils.DiscordUtils;
@@ -40,7 +40,7 @@ public class ModerationOptions extends OptionHandler {
                         return;
                     }
 
-                    OldGuild dbGuild = MantaroData.db().getGuild(event.getGuild());
+                    GuildData dbGuild = MantaroData.db().getGuild(event.getGuild());
                     ExtraGuildData guildData = dbGuild.getData();
 
                     List<String> toBlackList = mentioned.stream().map(ISnowflake::getId).collect(Collectors.toList());
@@ -64,7 +64,7 @@ public class ModerationOptions extends OptionHandler {
                         return;
                     }
 
-                    OldGuild dbGuild = MantaroData.db().getGuild(event.getGuild());
+                    GuildData dbGuild = MantaroData.db().getGuild(event.getGuild());
                     ExtraGuildData guildData = dbGuild.getData();
 
                     List<String> toUnBlackList = mentioned.stream().map(ISnowflake::getId).collect(Collectors.toList());
@@ -90,7 +90,7 @@ public class ModerationOptions extends OptionHandler {
                     String logChannel = args[0];
                     boolean isId = args[0].matches("^[0-9]*$");
                     String id = isId ? logChannel : event.getGuild().getTextChannelsByName(logChannel, true).get(0).getId();
-                    OldGuild dbGuild = MantaroData.db().getGuild(event.getGuild());
+                    GuildData dbGuild = MantaroData.db().getGuild(event.getGuild());
                     ExtraGuildData guildData = dbGuild.getData();
                     guildData.setGuildLogChannel(id);
                     dbGuild.saveAsync();
@@ -107,7 +107,7 @@ public class ModerationOptions extends OptionHandler {
                         onHelp(event);
                         return;
                     }
-                    OldGuild dbGuild = MantaroData.db().getGuild(event.getGuild());
+                    GuildData dbGuild = MantaroData.db().getGuild(event.getGuild());
                     ExtraGuildData guildData = dbGuild.getData();
 
                     if (args[0].equals("clearchannels")) {
@@ -170,7 +170,7 @@ public class ModerationOptions extends OptionHandler {
                 "Disables logs.\n" +
                         "**Example:** `~>opts logs disable`",
                 "Disables logs.", (event) -> {
-                    OldGuild dbGuild = MantaroData.db().getGuild(event.getGuild());
+                    GuildData dbGuild = MantaroData.db().getGuild(event.getGuild());
                     ExtraGuildData guildData = dbGuild.getData();
                     guildData.setGuildLogChannel(null);
                     dbGuild.saveAsync();

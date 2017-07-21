@@ -10,7 +10,6 @@ import net.kodehawa.mantarobot.commands.currency.item.ItemStack;
 import net.kodehawa.mantarobot.commands.currency.item.Items;
 import net.kodehawa.mantarobot.db.ManagedObject;
 import net.kodehawa.mantarobot.db.entities.helpers.Inventory;
-import net.kodehawa.mantarobot.db.entities.helpers.ExtraPlayerData;
 
 import java.beans.ConstructorProperties;
 import java.util.HashMap;
@@ -33,11 +32,11 @@ public class OldPlayer implements ManagedObject {
 	}
 
 	public static OldPlayer of(String userId) {
-		return new OldPlayer(userId + ":g", 0L, 0L, 0L, new HashMap<>(), new ExtraPlayerData());
+		return new OldPlayer(userId + ":g", 0L, 0L, 0L, new HashMap<>(), new OldPlayerData());
 	}
 
 	@Getter
-	private final ExtraPlayerData data;
+	private final OldPlayerData data;
 	@Getter
 	private final String id;
 	private transient Inventory inventory = new Inventory();
@@ -50,7 +49,7 @@ public class OldPlayer implements ManagedObject {
 	private Long reputation = null;
 
 	@ConstructorProperties({"id", "level", "money", "reputation", "inventory", "data"})
-	public OldPlayer(String id, Long level, Long money, Long reputation, Map<Integer, Integer> inventory, ExtraPlayerData data) {
+	public OldPlayer(String id, Long level, Long money, Long reputation, Map<Integer, Integer> inventory, OldPlayerData data) {
 		this.id = id;
 		this.level = level == null ? 0 : level;
 		this.money = money == null ? 0 : money;

@@ -12,15 +12,14 @@ import net.kodehawa.mantarobot.commands.currency.item.Item;
 import net.kodehawa.mantarobot.commands.currency.item.ItemStack;
 import net.kodehawa.mantarobot.commands.currency.item.Items;
 import net.kodehawa.mantarobot.data.MantaroData;
-import net.kodehawa.dataporter.oldentities.OldUser;
-import net.kodehawa.dataporter.oldentities.OldPlayer;
-import net.kodehawa.mantarobot.db.entities.helpers.Inventory;
+import net.kodehawa.mantarobot.db.entities.Marriage;
+import net.kodehawa.mantarobot.db.entities.UserData;
 import net.kodehawa.mantarobot.db.entities.helpers.ExtraUserData;
+import net.kodehawa.mantarobot.db.entities.helpers.Inventory;
 import net.kodehawa.mantarobot.modules.CommandRegistry;
 import net.kodehawa.mantarobot.modules.Module;
 import net.kodehawa.mantarobot.modules.commands.SimpleCommand;
 import net.kodehawa.mantarobot.modules.commands.base.Category;
-import net.kodehawa.mantarobot.shard.MantaroShard;
 import net.kodehawa.mantarobot.utils.Utils;
 import net.kodehawa.mantarobot.utils.commands.EmoteReference;
 
@@ -41,14 +40,14 @@ public class CurrencyCmds {
         cr.register("inventory", new SimpleCommand(Category.CURRENCY) {
             @Override
             public void call(GuildMessageReceivedEvent event, String content, String[] args) {
-                OldPlayer user = MantaroData.db().getPlayer(event.getMember());
+                UserData user = MantaroData.db().getUser(event.getMember());
 
                 EmbedBuilder builder = baseEmbed(event, event.getMember().getEffectiveName() + "'s Inventory", event.getAuthor()
                         .getEffectiveAvatarUrl());
-                List<ItemStack> list = user.getInventory().asList();
+                List<ItemStack> list = user.inventory().asList();
                 if (list.isEmpty()) builder.setDescription("There is only dust.");
                 else
-                    user.getInventory().asList().forEach(stack -> {
+                    user.inventory().asList().forEach(stack -> {
                         long buyValue = stack.getItem().isBuyable() ? (long) (stack.getItem().getValue() * 1.1) : 0;
                         long sellValue = stack.getItem().isSellable() ? (long) (stack.getItem().getValue() * 0.9) : 0;
                         builder.addField(stack.getItem().getEmoji() + " " + stack.getItem().getName() + " x " + stack.getAmount(), String
@@ -82,7 +81,7 @@ public class CurrencyCmds {
                     return;
                 }
 
-                OldPlayer player = MantaroData.db().getPlayer(event.getMember());
+                UserData player = MantaroData.db().getUser(event.getMember());
 
                 if(player.isLocked()) {
                     event.getChannel().sendMessage(EmoteReference.ERROR + "You cannot access the market now.").queue();
@@ -116,7 +115,7 @@ public class CurrencyCmds {
                     if (args[0].equals("sell")) {
                         try {
                             if (args[1].equals("all")) {
-                                long all = player.getInventory().asList().stream()
+                                long all = player.inventory().asList().stream()
                                         .filter(item -> item.getItem().isSellable())
                                         .mapToLong(value -> (long) (value.getItem().getValue() * value.getAmount() * 0.9d))
                                         .sum();
@@ -127,7 +126,7 @@ public class CurrencyCmds {
                                     return;
                                 }
 
-                                player.getInventory().clearOnlySellables();
+                                player.inventory().clearOnlySellables();
 
                                 if (player.addMoney(all)) {
                                     event.getChannel().sendMessage(EmoteReference.MONEY + "You sold all your inventory items and gained "
@@ -152,12 +151,12 @@ public class CurrencyCmds {
                                 return;
                             }
 
-                            if (player.getInventory().asMap().getOrDefault(toSell, null) == null) {
+                            if (player.inventory().asMap().getOrDefault(toSell, null) == null) {
                                 event.getChannel().sendMessage(EmoteReference.STOP + "You cannot sell an item you don't have.").queue();
                                 return;
                             }
 
-                            if (player.getInventory().getAmount(toSell) < itemNumber) {
+                            if (player.inventory().getAmount(toSell) < itemNumber) {
                                 event.getChannel().sendMessage(EmoteReference.ERROR + "You cannot sell more items than what you have.")
                                         .queue();
                                 return;
@@ -165,7 +164,7 @@ public class CurrencyCmds {
 
                             int many = itemNumber * -1;
                             long amount = Math.round((toSell.getValue() * 0.9)) * Math.abs(many);
-                            player.getInventory().process(new ItemStack(toSell, many));
+                            player.inventory().process(new ItemStack(toSell, many));
 
                             if (player.addMoney(amount)) {
                                 event.getChannel().sendMessage(EmoteReference.CORRECT + "You sold " + Math.abs(many) + " **" + toSell
@@ -203,7 +202,7 @@ public class CurrencyCmds {
                                 return;
                             }
 
-                            ItemStack stack = player.getInventory().getStackOf(itemToBuy);
+                            ItemStack stack = player.inventory().getStackOf(itemToBuy);
                             if (stack != null && !stack.canJoin(new ItemStack(itemToBuy, itemNumber))) {
                                 //assume overflow
                                 event.getChannel().sendMessage(EmoteReference.ERROR + "You cannot buy more of that object!").queue();
@@ -211,7 +210,7 @@ public class CurrencyCmds {
                             }
 
                             if (player.removeMoney(itemToBuy.getValue() * itemNumber)) {
-                                player.getInventory().process(new ItemStack(itemToBuy, itemNumber));
+                                player.inventory().process(new ItemStack(itemToBuy, itemNumber));
                                 player.save();
                                 event.getChannel().sendMessage(EmoteReference.OK + "Bought " + itemNumber + " " + itemToBuy.getEmoji() +
                                         " successfully. You now have " + player.getMoney() + " credits.").queue();
@@ -270,8 +269,8 @@ public class CurrencyCmds {
             @Override
             public void call(GuildMessageReceivedEvent event, String content, String[] args) {
 
-                OldPlayer player = MantaroData.db().getPlayer(event.getMember());
-                OldUser u1 = MantaroData.db().getUser(event.getMember());
+                UserData player = MantaroData.db().getUser(event.getMember());
+                UserData u1 = MantaroData.db().getUser(event.getMember());
                 User author = event.getAuthor();
 
                 if (args.length > 0 && args[0].equals("timezone")) {
@@ -316,7 +315,7 @@ public class CurrencyCmds {
                             return;
                         }
 
-                        player.getData().setDescription(content1);
+                        player.setDescription(content1);
                         event.getChannel().sendMessage(EmoteReference.POPPER + "Set description to: **" + content1 + "**\n" +
                                 "Check your shiny new profile with `~>profile`").queue();
                         player.saveAsync();
@@ -324,7 +323,7 @@ public class CurrencyCmds {
                     }
 
                     if (args[1].equals("clear")) {
-                        player.getData().setDescription(null);
+                        player.setDescription(null);
                         event.getChannel().sendMessage(EmoteReference.CORRECT + "Successfully cleared description.").queue();
                         player.saveAsync();
                         return;
@@ -344,38 +343,40 @@ public class CurrencyCmds {
                     }
 
                     user = MantaroData.db().getUser(author).getData();
-                    player = MantaroData.db().getPlayer(member);
+                    player = MantaroData.db().getUser(member);
                 }
 
-                User user1 = getUserById(player.getData().getMarriedWith());
-                String marriedSince = player.getData().marryDate();
-                String anniversary = player.getData().anniversary();
+                Marriage marriage = player.getMarriage();
+                User userMarriedWith = marriage == null ? null : getUserById(marriage.marriedWith(player.getId()));
 
                 if (args.length > 0 && args[0].equals("anniversary")) {
-                    if (anniversary == null) {
+                    if (marriage == null) {
                         event.getChannel().sendMessage(EmoteReference.ERROR + "I don't see any anniversary here :(. Maybe you were " +
                                 "married before this change was implemented, in that case do ~>marry anniversarystart").queue();
                         return;
                     }
+
+                    String marriedSince = marriage.marryDate();
+                    String anniversary = marriage.anniversary();
+
                     event.getChannel().sendMessage(String.format("%sYour anniversary with **%s** is on %s. You married on **%s**",
-                            EmoteReference.POPPER, user1.getName(), anniversary, marriedSince)).queue();
+                            EmoteReference.POPPER, userMarriedWith.getName(), anniversary, marriedSince)).queue();
                     return;
                 }
 
-                event.getChannel().sendMessage(baseEmbed(event, (user1 == null || !player.getInventory().containsItem(Items.RING) ? "" :
+                event.getChannel().sendMessage(baseEmbed(event, (userMarriedWith == null || !player.inventory().containsItem(Items.RING) ? "" :
                         EmoteReference.RING) + member.getEffectiveName() + "'s Profile", author.getEffectiveAvatarUrl())
                         .setThumbnail(author.getEffectiveAvatarUrl())
-                        .setDescription(player.getData().getDescription() == null ? "No description set" : player.getData()
-                                .getDescription())
+                        .setDescription(player.getDescription() == null ? "No description set" : player.getDescription())
                         .addField(EmoteReference.DOLLAR + "Credits", "$ " + player.getMoney(), false)
-                        .addField(EmoteReference.ZAP + "Level", player.getLevel() + " (Experience: " + player.getData().getExperience() +
+                        .addField(EmoteReference.ZAP + "Level", player.getLevel() + " (Experience: " + player.getXp() +
                                 ")", true)
                         .addField(EmoteReference.REP + "Reputation", String.valueOf(player.getReputation()), true)
-                        .addField(EmoteReference.POUCH + "Inventory", ItemStack.toString(player.getInventory().asList()), false)
+                        .addField(EmoteReference.POUCH + "Inventory", ItemStack.toString(player.inventory().asList()), false)
                         .addField(EmoteReference.POPPER + "Birthday", user.getBirthday() != null ? user.getBirthday().substring(0, 5) :
                                 "Not specified.", true)
-                        .addField(EmoteReference.HEART + "Married with", user1 == null ? "Nobody." : user1.getName() + "#" +
-                                user1.getDiscriminator(), true)
+                        .addField(EmoteReference.HEART + "Married with", userMarriedWith == null ? "Nobody." : userMarriedWith.getName() + "#" +
+                            userMarriedWith.getDiscriminator(), true)
                         .setFooter("User's timezone: " + (user.getTimezone() == null ? "No timezone set." : user.getTimezone() + " | " +
                                 "Requested by " + event.getAuthor().getName()), event.getAuthor().getAvatarUrl())
                         .build()
@@ -434,7 +435,7 @@ public class CurrencyCmds {
                     return;
                 }
                 User mentioned = event.getMessage().getMentionedUsers().get(0);
-                OldPlayer player = MantaroData.db().getPlayer(event.getGuild().getMember(mentioned));
+                UserData player = MantaroData.db().getUser(event.getGuild().getMember(mentioned));
                 player.addReputation(1L);
                 player.saveAsync();
                 event.getChannel().sendMessage(EmoteReference.CORRECT + "Added reputation to **" + mentioned.getName() + "**").queue();
@@ -479,22 +480,22 @@ public class CurrencyCmds {
                         event.getChannel().sendMessage("There isn't an item associated with this emoji.").queue();
                     }
                     else {
-                        OldPlayer player = MantaroData.db().getPlayer(event.getAuthor());
-                        OldPlayer giveToPlayer = MantaroData.db().getPlayer(giveTo);
+                        UserData player = MantaroData.db().getUser(event.getAuthor());
+                        UserData giveToPlayer = MantaroData.db().getUser(giveTo);
                         if (args.length == 2) {
-                            if (player.getInventory().containsItem(item)) {
+                            if (player.inventory().containsItem(item)) {
                                 if (item.isHidden()) {
                                     event.getChannel().sendMessage(EmoteReference.ERROR + "You cannot transfer this item!").queue();
                                     return;
                                 }
 
-                                if(giveToPlayer.getInventory().asMap().getOrDefault(item, new ItemStack(item, 0)).getAmount() >= 5000) {
+                                if(giveToPlayer.inventory().asMap().getOrDefault(item, new ItemStack(item, 0)).getAmount() >= 5000) {
                                     event.getChannel().sendMessage(EmoteReference.ERROR + "Don't do that").queue();
                                     return;
                                 }
 
-                                player.getInventory().process(new ItemStack(item, -1));
-                                giveToPlayer.getInventory().process(new ItemStack(item, 1));
+                                player.inventory().process(new ItemStack(item, -1));
+                                giveToPlayer.inventory().process(new ItemStack(item, 1));
                                 event.getChannel().sendMessage(EmoteReference.OK + event.getAuthor().getAsMention() + " gave 1 " + item
                                         .getName() + " to " + giveTo.getAsMention()).queue();
                             }
@@ -509,19 +510,19 @@ public class CurrencyCmds {
 
                         try {
                             int amount = Math.abs(Integer.parseInt(args[2]));
-                            if (player.getInventory().containsItem(item) && player.getInventory().getAmount(item) >= amount) {
+                            if (player.inventory().containsItem(item) && player.inventory().getAmount(item) >= amount) {
                                 if (item.isHidden()) {
                                     event.getChannel().sendMessage(EmoteReference.ERROR + "You cannot transfer this item!").queue();
                                     return;
                                 }
 
-                                if(giveToPlayer.getInventory().asMap().getOrDefault(item, new ItemStack(item, 0)).getAmount() + amount >= 5000) {
+                                if(giveToPlayer.inventory().asMap().getOrDefault(item, new ItemStack(item, 0)).getAmount() + amount >= 5000) {
                                     event.getChannel().sendMessage(EmoteReference.ERROR + "Don't do that").queue();
                                     return;
                                 }
 
-                                player.getInventory().process(new ItemStack(item, amount * -1));
-                                giveToPlayer.getInventory().process(new ItemStack(item, amount));
+                                player.inventory().process(new ItemStack(item, amount * -1));
+                                giveToPlayer.inventory().process(new ItemStack(item, amount));
                                 event.getChannel().sendMessage(EmoteReference.OK + event.getAuthor().getAsMention() + " gave " + amount +
                                         " " + item.getName() + " to " + giveTo.getAsMention()).queue();
                             }
@@ -583,7 +584,7 @@ public class CurrencyCmds {
                      return;
                 }
 
-                OldPlayer transferPlayer = MantaroData.db().getPlayer(event.getMember());
+                UserData transferPlayer = MantaroData.db().getUser(event.getMember());
 
                 if(transferPlayer.isLocked()) {
                     event.getChannel().sendMessage(EmoteReference.ERROR + "You cannot transfer money now.").queue();
@@ -601,7 +602,7 @@ public class CurrencyCmds {
                     return;
                 }
 
-                OldPlayer toTransfer = MantaroData.db().getPlayer(event.getGuild().getMember(user));
+                UserData toTransfer = MantaroData.db().getUser(event.getGuild().getMember(user));
 
                 if(toTransfer.isLocked()) {
                     event.getChannel().sendMessage(EmoteReference.ERROR + "That user cannot receive money now.").queue();
@@ -654,8 +655,8 @@ public class CurrencyCmds {
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
                 String id = event.getAuthor().getId();
 
-                OldPlayer player = MantaroData.db().getPlayer(event.getAuthor());
-                Inventory inventory = player.getInventory();
+                UserData player = MantaroData.db().getUser(event.getAuthor());
+                Inventory inventory = player.inventory();
                 if (inventory.containsItem(Items.LOOT_CRATE)) {
                     if (inventory.containsItem(Items.LOOT_CRATE_KEY)) {
                         if (!rateLimiter.process(id)) {
@@ -708,10 +709,10 @@ public class CurrencyCmds {
             for (Item i : Items.ALL) if (i.isHidden() || !i.isBuyable() || i.isSellable()) items.add(i);
         }
         for (int i = 0; i < amtItems; i++) toAdd.add(selectReverseWeighted(items));
-        OldPlayer player = MantaroData.db().getPlayer(event.getMember());
+        UserData player = MantaroData.db().getUser(event.getMember());
         ArrayList<ItemStack> ita = new ArrayList<>();
         toAdd.forEach(item -> ita.add(new ItemStack(item, 1)));
-        boolean overflow = player.getInventory().merge(ita);
+        boolean overflow = player.inventory().merge(ita);
         player.save();
         event.getChannel().sendMessage(EmoteReference.LOOT_CRATE.getDiscordNotation() + "**You won:** " +
                 toAdd.stream().map(Item::toString).collect(Collectors.joining(", ")) + (
@@ -738,8 +739,6 @@ public class CurrencyCmds {
 
     private static User getUserById(String id) {
         if (id == null) return null;
-        MantaroShard shard1 = MantaroBot.getInstance().getShardList().stream().filter(shard ->
-                shard.getJDA().getUserById(id) != null).findFirst().orElse(null);
-        return shard1 == null ? null : shard1.getUserById(id);
+        return MantaroBot.getInstance().getUserById(id);
     }
 }

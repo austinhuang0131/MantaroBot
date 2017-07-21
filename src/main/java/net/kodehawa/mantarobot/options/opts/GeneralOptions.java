@@ -12,7 +12,7 @@ import net.kodehawa.mantarobot.options.annotations.Option;
 import net.kodehawa.mantarobot.options.event.OptionRegistryEvent;
 import net.kodehawa.mantarobot.core.listeners.operations.old.InteractiveOperations;
 import net.kodehawa.mantarobot.data.MantaroData;
-import net.kodehawa.dataporter.oldentities.OldGuild;
+import net.kodehawa.mantarobot.db.entities.GuildData;
 import net.kodehawa.mantarobot.db.entities.helpers.ExtraGuildData;
 import net.kodehawa.mantarobot.utils.DiscordUtils;
 import net.kodehawa.mantarobot.utils.commands.EmoteReference;
@@ -44,7 +44,7 @@ public class GeneralOptions extends OptionHandler {
                         return;
                     }
 
-                    OldGuild dbGuild = MantaroData.db().getGuild(event.getGuild());
+                    GuildData dbGuild = MantaroData.db().getGuild(event.getGuild());
                     ExtraGuildData guildData = dbGuild.getData();
 
                     List<String> toBlackList = mentioned.stream().map(ISnowflake::getId).collect(Collectors.toList());
@@ -67,7 +67,7 @@ public class GeneralOptions extends OptionHandler {
                         return;
                     }
 
-                    OldGuild dbGuild = MantaroData.db().getGuild(event.getGuild());
+                    GuildData dbGuild = MantaroData.db().getGuild(event.getGuild());
                     ExtraGuildData guildData = dbGuild.getData();
 
                     List<String> toUnBlacklist = mentioned.stream().map(ISnowflake::getId).collect(Collectors.toList());
@@ -80,7 +80,7 @@ public class GeneralOptions extends OptionHandler {
                 });
 
         registerOption("linkprotection:toggle", "Link-protection toggle", "Toggles anti-link protection.", event -> {
-            OldGuild dbGuild = MantaroData.db().getGuild(event.getGuild());
+            GuildData dbGuild = MantaroData.db().getGuild(event.getGuild());
             ExtraGuildData guildData = dbGuild.getData();
             boolean toggler = guildData.isLinkProtection();
 
@@ -90,7 +90,7 @@ public class GeneralOptions extends OptionHandler {
         });
 
         registerOption("slowmode:toggle", "Slow mode toggle", "Toggles slow mode (1 message/3s)", event -> {
-            OldGuild dbGuild = MantaroData.db().getGuild(event.getGuild());
+            GuildData dbGuild = MantaroData.db().getGuild(event.getGuild());
             ExtraGuildData guildData = dbGuild.getData();
             boolean toggler = guildData.isSlowMode();
 
@@ -100,7 +100,7 @@ public class GeneralOptions extends OptionHandler {
         });
 
         registerOption("antispam:toggle", "Link-protection toggle", "Toggles anti-spam (3 messages/3s)", event -> {
-            OldGuild dbGuild = MantaroData.db().getGuild(event.getGuild());
+            GuildData dbGuild = MantaroData.db().getGuild(event.getGuild());
             ExtraGuildData guildData = dbGuild.getData();
             boolean toggler = guildData.isAntiSpam();
 
@@ -119,7 +119,7 @@ public class GeneralOptions extends OptionHandler {
                         return;
                     }
 
-                    OldGuild dbGuild = MantaroData.db().getGuild(event.getGuild());
+                    GuildData dbGuild = MantaroData.db().getGuild(event.getGuild());
                     ExtraGuildData guildData = dbGuild.getData();
                     String channelName = args[0];
                     List<TextChannel> textChannels = event.getGuild().getTextChannels().stream()
@@ -158,7 +158,7 @@ public class GeneralOptions extends OptionHandler {
                         return;
                     }
 
-                    OldGuild dbGuild = MantaroData.db().getGuild(event.getGuild());
+                    GuildData dbGuild = MantaroData.db().getGuild(event.getGuild());
                     ExtraGuildData guildData = dbGuild.getData();
                     String channelName = args[0];
                     List<TextChannel> textChannels = event.getGuild().getTextChannels().stream()

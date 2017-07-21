@@ -6,7 +6,7 @@ import net.dv8tion.jda.core.entities.IMentionable;
 import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.kodehawa.mantarobot.data.MantaroData;
-import net.kodehawa.dataporter.oldentities.OldGuild;
+import net.kodehawa.mantarobot.db.entities.GuildData;
 import net.kodehawa.mantarobot.db.entities.helpers.ExtraGuildData;
 import net.kodehawa.mantarobot.modules.commands.NoArgsCommand;
 import net.kodehawa.mantarobot.modules.commands.base.Category;
@@ -63,7 +63,7 @@ public class ImageActionCmd extends NoArgsCommand {
 				event.getChannel().sendMessage(EmoteReference.ERROR + "You need to mention a user").queue();
 				return;
 			}
-			OldGuild dbGuild = MantaroData.db().getGuild(event.getGuild());
+			GuildData dbGuild = MantaroData.db().getGuild(event.getGuild());
 			ExtraGuildData guildData = dbGuild.getData();
 
 			MessageBuilder toSend = new MessageBuilder()

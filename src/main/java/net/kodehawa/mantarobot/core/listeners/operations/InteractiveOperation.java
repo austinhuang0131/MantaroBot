@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.function.Predicate;
+import java.util.function.Function;
 
 public class InteractiveOperation {
 	private static final ScheduledExecutorService EXECUTOR = Executors.newSingleThreadScheduledExecutor(
@@ -32,11 +32,15 @@ public class InteractiveOperation {
 					operation.timeoutFuture = null;
 				}
 
-				if (operation.onMessage.test(event)) {
-					OPERATIONS.remove(id, operation);
-				} else {
-					scheduleTimeout(operation, false);
-				}
+				switch (operation.onMessage.apply(event)) {
+                    case RESET_TIMEOUT:
+                        scheduleTimeout(operation, false);
+                        break;
+                    case COMPLETED:
+                        operation.onRemoved.run();
+                        OPERATIONS.remove(id, operation);
+                        break;
+                }
 			}
 		}
 	};
@@ -82,11 +86,15 @@ public class InteractiveOperation {
 	private final String channelId;
 	private final TimeAmount increasingTimeout;
 	private final TimeAmount initialTimeout;
-	private final Predicate<GuildMessageReceivedEvent> onMessage;
+	private final Function<GuildMessageReceivedEvent,OperationResult> onMessage;
 	private final Runnable onTimeout, onRemoved;
 	private Future<?> timeoutFuture;
 
-	InteractiveOperation(String channelId, TimeAmount initialTimeout, TimeAmount increasingTimeout, Predicate<GuildMessageReceivedEvent> onMessage, Runnable onTimeout, Runnable onRemoved) {
+	InteractiveOperation(
+	    String channelId, TimeAmount initialTimeout, TimeAmount increasingTimeout,
+        Function<GuildMessageReceivedEvent,OperationResult> onMessage,
+        Runnable onTimeout, Runnable onRemoved
+    ) {
 		this.channelId = channelId;
 		this.initialTimeout = initialTimeout;
 		this.increasingTimeout = increasingTimeout;

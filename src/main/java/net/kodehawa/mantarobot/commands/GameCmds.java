@@ -11,7 +11,7 @@ import net.kodehawa.mantarobot.commands.game.Trivia;
 import net.kodehawa.mantarobot.commands.game.core.Game;
 import net.kodehawa.mantarobot.commands.game.core.GameLobby;
 import net.kodehawa.mantarobot.data.MantaroData;
-import net.kodehawa.dataporter.oldentities.OldPlayer;
+import net.kodehawa.mantarobot.db.entities.UserData;
 import net.kodehawa.mantarobot.modules.CommandRegistry;
 import net.kodehawa.mantarobot.modules.Module;
 import net.kodehawa.mantarobot.modules.commands.SimpleCommand;
@@ -87,8 +87,8 @@ public class GameCmds {
 		LinkedList<Game> list = new LinkedList<>();
 		list.add(game);
 
-		HashMap<Member, OldPlayer> map = new HashMap<>();
-		map.put(event.getMember(), MantaroData.db().getPlayer(event.getMember()));
+		HashMap<Member, UserData> map = new HashMap<>();
+		map.put(event.getMember(), MantaroData.db().getUser(event.getMember()));
 
 
 		if(!event.getMessage().getMentionedRoles().isEmpty()){
@@ -96,7 +96,7 @@ public class GameCmds {
 			event.getMessage().getMentionedRoles().forEach(role ->
 				event.getGuild().getMembersWithRoles(role).forEach(user  -> {
 					if (!user.getUser().getId().equals(event.getJDA().getSelfUser().getId()))
-						map.put(user, MantaroData.db().getPlayer(user));
+						map.put(user, MantaroData.db().getUser(user));
 					b.append(user.getEffectiveName()).append(" ");
 				})
 			);
@@ -107,7 +107,7 @@ public class GameCmds {
 			StringBuilder builder = new StringBuilder();
 			event.getMessage().getMentionedUsers().forEach(user -> {
 				if (!user.getId().equals(event.getJDA().getSelfUser().getId()))
-					map.put(event.getGuild().getMember(user), MantaroData.db().getPlayer(event.getGuild().getMember(user)));
+					map.put(event.getGuild().getMember(user), MantaroData.db().getUser(event.getGuild().getMember(user)));
 				builder.append(user.getName()).append(" ");
 			});
 

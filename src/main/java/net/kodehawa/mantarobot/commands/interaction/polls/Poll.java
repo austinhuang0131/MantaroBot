@@ -12,7 +12,7 @@ import net.kodehawa.mantarobot.core.listeners.operations.old.OperationListener;
 import net.kodehawa.mantarobot.core.listeners.operations.old.ReactionOperationListener;
 import net.kodehawa.mantarobot.core.listeners.operations.old.ReactionOperations;
 import net.kodehawa.mantarobot.data.MantaroData;
-import net.kodehawa.dataporter.oldentities.OldGuild;
+import net.kodehawa.mantarobot.db.entities.GuildData;
 import net.kodehawa.mantarobot.db.entities.helpers.ExtraGuildData;
 import net.kodehawa.mantarobot.utils.Utils;
 import net.kodehawa.mantarobot.utils.commands.EmoteReference;
@@ -71,7 +71,7 @@ public class Poll extends Lobby {
                 return;
             }
 
-            OldGuild dbGuild = MantaroData.db().getGuild(event.getGuild());
+            GuildData dbGuild = MantaroData.db().getGuild(event.getGuild());
             ExtraGuildData data = dbGuild.getData();
             AtomicInteger at = new AtomicInteger();
 

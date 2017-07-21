@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
+@Deprecated
 public final class ReactionOperations {
     private static final EventListener LISTENER = new ReactionListener();
 
@@ -22,45 +23,6 @@ public final class ReactionOperations {
             .asyncExpirationListener((key, value) -> ((RunningOperation)value).operation.onExpire())
             .variableExpiration()
             .build();
-
-    public static Future<Void> get(Message message) {
-        if(!message.getAuthor().equals(message.getJDA().getSelfUser())) throw new IllegalArgumentException("Must provide a message sent by the bot");
-        return get(message.getIdLong());
-    }
-
-    public static Future<Void> get(long messageId) {
-        RunningOperation o = OPERATIONS.get(messageId);
-        return o == null ? null : o.future;
-    }
-
-    public static Future<Void> createOrGet(Message message, long timeoutSeconds, ReactionOperationListener operation, String... defaultReactions) {
-        if(!message.getAuthor().equals(message.getJDA().getSelfUser())) throw new IllegalArgumentException("Must provide a message sent by the bot");
-        Future<Void> f = createOrGet(message.getIdLong(), timeoutSeconds, operation);
-        if(defaultReactions.length > 0) {
-            AtomicInteger index = new AtomicInteger();
-            AtomicReference<Consumer<Void>> c = new AtomicReference<>();
-            Consumer<Throwable> ignore = (t)->{};
-            c.set(ignored->{
-                if(f.isCancelled()) return;
-                int i = index.incrementAndGet();
-                if(i < defaultReactions.length) {
-                    message.addReaction(reaction(defaultReactions[i])).queue(c.get(), ignore);
-                }
-            });
-            message.addReaction(reaction(defaultReactions[0])).queue(c.get(), ignore);
-        }
-        return f;
-    }
-
-    public static Future<Void> createOrGet(long messageId, long timeoutSeconds, ReactionOperationListener operation) {
-        if(timeoutSeconds < 1) throw new IllegalArgumentException("Timeout < 1");
-        if(operation == null) throw new NullPointerException("operation");
-        RunningOperation o = OPERATIONS.get(messageId);
-        if(o != null) return o.future;
-        o = new RunningOperation(operation, new OperationFuture(messageId));
-        OPERATIONS.put(messageId, o, timeoutSeconds, TimeUnit.SECONDS);
-        return o.future;
-    }
 
     public static Future<Void> create(Message message, long timeoutSeconds, ReactionOperationListener operation, String... defaultReactions) {
         if(!message.getAuthor().equals(message.getJDA().getSelfUser())) throw new IllegalArgumentException("Must provide a message sent by the bot");

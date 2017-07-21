@@ -7,16 +7,15 @@ import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.ISnowflake;
 import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import net.kodehawa.dataporter.oldentities.OldCustomCommand;
 import net.kodehawa.lib.customfunc.CustomFunc;
 import net.kodehawa.mantarobot.MantaroBot;
 import net.kodehawa.mantarobot.commands.currency.TextChannelGround;
 import net.kodehawa.mantarobot.commands.custom.ConditionalCustoms;
 import net.kodehawa.mantarobot.commands.custom.EmbedJSON;
-import net.kodehawa.mantarobot.core.listeners.command.CommandListener;
 import net.kodehawa.mantarobot.core.listeners.operations.old.InteractiveOperations;
 import net.kodehawa.mantarobot.core.listeners.operations.old.OperationListener;
 import net.kodehawa.mantarobot.data.MantaroData;
+import net.kodehawa.mantarobot.db.entities.CustomCommand;
 import net.kodehawa.mantarobot.modules.CommandRegistry;
 import net.kodehawa.mantarobot.modules.Module;
 import net.kodehawa.mantarobot.modules.PostLoadEvent;
@@ -30,7 +29,10 @@ import net.kodehawa.mantarobot.utils.data.GsonDataManager;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -38,6 +40,7 @@ import java.util.stream.Collectors;
 import static br.com.brjdevs.java.utils.collections.CollectionUtils.random;
 import static net.kodehawa.mantarobot.commands.info.CommandStatsManager.log;
 import static net.kodehawa.mantarobot.commands.info.HelpUtils.forType;
+import static net.kodehawa.mantarobot.core.listeners.command.CommandListener.PROCESSOR;
 import static net.kodehawa.mantarobot.data.MantaroData.db;
 import static net.kodehawa.mantarobot.utils.StringUtils.SPLIT_PATTERN;
 
@@ -172,14 +175,14 @@ public class CustomCmds {
 						return;
 					}
 
-					List<OldCustomCommand> customCommands = db().getCustomCommands(event.getGuild());
+					List<CustomCommand> customCommands = db().getCustomCommands(event.getGuild());
 
 					if (customCommands.isEmpty()) {
 						event.getChannel().sendMessage(
 							EmoteReference.ERROR + "There's no Custom Commands registered in this Guild.").queue();
 					}
 					int size = customCommands.size();
-					customCommands.forEach(OldCustomCommand::deleteAsync);
+					customCommands.forEach(CustomCommand::deleteAsync);
 					customCommands.forEach(c -> CustomCmds.customCommands.remove(c.getId()));
 					event.getChannel().sendMessage(EmoteReference.PENCIL + "Cleared **" + size + " Custom Commands**!")
 						.queue();
@@ -230,8 +233,8 @@ public class CustomCmds {
 									return OperationListener.RESET_TIMEOUT;
 								}
 
-								if (CommandListener.PROCESSOR.commands().containsKey(
-									saveTo) && !CommandListener.PROCESSOR.commands().get(saveTo).equals(
+								if (PROCESSOR.commands().containsKey(
+									saveTo) && !PROCESSOR.commands().get(saveTo).equals(
 									customCommand)) {
 									event.getChannel().sendMessage(
 										EmoteReference.ERROR + "A command already exists with this name!").queue();
@@ -243,16 +246,18 @@ public class CustomCmds {
 										EmoteReference.ERROR + "No responses were added. Stopping creation without saving...")
 										.queue();
 								} else {
-									OldCustomCommand custom = OldCustomCommand.of(event.getGuild().getId(), cmd, responses);
+									CustomCommand custom = new CustomCommand(cmd, event.getGuild().getId());
+									custom.values().addAll(responses);
+									custom.getAuthors().add(event.getAuthor().getId());
 
 									//save at DB
 									custom.saveAsync();
 
 									//reflect at local
-									customCommands.put(custom.getId(), custom.getValues());
+									customCommands.put(custom.getId(), custom.values());
 
 									//add mini-hack
-									CommandListener.PROCESSOR.commands().put(cmd, customCommand);
+									PROCESSOR.commands().put(cmd, customCommand);
 
 									event.getChannel().sendMessage(
 										EmoteReference.CORRECT + "Saved to command ``" + cmd + "``!").queue();
@@ -287,7 +292,7 @@ public class CustomCmds {
 						return;
 					}
 
-					OldCustomCommand custom = db().getCustomCommand(event.getGuild(), cmd);
+					CustomCommand custom = db().getCustomCommand(event.getGuild(), cmd);
 					if (custom == null) {
 						event.getChannel().sendMessage(
 							EmoteReference.ERROR2 + "There's no Custom Command ``" + cmd + "`` in this Guild.").queue();
@@ -302,7 +307,7 @@ public class CustomCmds {
 
 					//clear commands if none
 					if (customCommands.keySet().stream().noneMatch(s -> s.endsWith(":" + cmd)))
-						CommandListener.PROCESSOR.commands().remove(cmd);
+						PROCESSOR.commands().remove(cmd);
 
 					event.getChannel().sendMessage(EmoteReference.PENCIL + "Removed Custom Command ``" + cmd + "``!")
 						.queue();
@@ -316,7 +321,7 @@ public class CustomCmds {
 						return;
 					}
 
-					OldCustomCommand custom = db().getCustomCommand(event.getGuild(), cmd);
+					CustomCommand custom = db().getCustomCommand(event.getGuild(), cmd);
 					if (custom == null) {
 						event.getChannel().sendMessage(
 							EmoteReference.ERROR2 + "There's no Custom Command ``" + cmd + "`` in this Guild.").queue();
@@ -343,7 +348,7 @@ public class CustomCmds {
 					Map<String, Guild> mapped = MantaroBot.getInstance().getMutualGuilds(event.getAuthor()).stream()
 						.collect(Collectors.toMap(ISnowflake::getId, g -> g));
 
-					List<Pair<Guild, OldCustomCommand>> filtered = MantaroData.db()
+					List<Pair<Guild, CustomCommand>> filtered = MantaroData.db()
 						.getCustomCommandsByName(("*" + cmd + "*").replace("*", any)).stream()
 						.map(customCommand -> {
 							Guild guild = mapped.get(customCommand.getGuildId());
@@ -360,26 +365,26 @@ public class CustomCmds {
 
 					DiscordUtils.selectList(
 						event, filtered,
-						pair -> "``" + pair.getValue().getName() + "`` - Guild: ``" + pair.getKey() + "``",
+						pair -> "``" + pair.getValue().getCommandName() + "`` - Guild: ``" + pair.getKey() + "``",
 						s -> baseEmbed(event, "Select the Command:").setDescription(s)
 							.setFooter(
 								"(You can only select custom commands from guilds that you are a member of)",
 								null
 							).build(),
 						pair -> {
-							String cmdName = pair.getValue().getName();
-							List<String> responses = pair.getValue().getValues();
-							OldCustomCommand custom = OldCustomCommand.of(event.getGuild().getId(), cmdName, responses);
+							String cmdName = pair.getValue().getCommandName();
+							CustomCommand custom = pair.getValue().exportToGuild(event.getGuild().getId());
 
 							//save at DB
 							custom.saveAsync();
 
 							//reflect at local
-							customCommands.put(custom.getId(), custom.getValues());
+							customCommands.put(custom.getId(), custom.values());
 
 							event.getChannel().sendMessage(String
-								.format("Imported custom command ``%s`` from guild `%s` with responses ``%s``", cmdName,
-									pair.getKey().getName(), String.join("``, ``", responses)
+								.format("Imported custom command ``%s`` from guild `%s` with responses ``%s``",
+									cmdName,
+									pair.getKey().getName(), String.join("``, ``", pair.getValue().values())
 								)).queue();
 
 							//easter egg :D
@@ -403,14 +408,14 @@ public class CustomCmds {
 						return;
 					}
 
-					if (CommandListener.PROCESSOR.commands().containsKey(value) && !CommandListener.PROCESSOR.commands()
+					if (PROCESSOR.commands().containsKey(value) && !PROCESSOR.commands()
 						.get(value).equals(customCommand)) {
 						event.getChannel().sendMessage(
 							EmoteReference.ERROR + "A command already exists with this name!").queue();
 						return;
 					}
 
-					OldCustomCommand oldCustom = db().getCustomCommand(event.getGuild(), cmd);
+					CustomCommand oldCustom = db().getCustomCommand(event.getGuild(), cmd);
 
 					if (oldCustom == null) {
 						event.getChannel().sendMessage(
@@ -418,7 +423,7 @@ public class CustomCmds {
 						return;
 					}
 
-					OldCustomCommand newCustom = OldCustomCommand.of(event.getGuild().getId(), value, oldCustom.getValues());
+					CustomCommand newCustom = oldCustom.rename(value);
 
 					//change at DB
 					oldCustom.deleteAsync();
@@ -426,14 +431,14 @@ public class CustomCmds {
 
 					//reflect at local
 					customCommands.remove(oldCustom.getId());
-					customCommands.put(newCustom.getId(), newCustom.getValues());
+					customCommands.put(newCustom.getId(), newCustom.values());
 
 					//add mini-hack
-					CommandListener.PROCESSOR.commands().put(cmd, customCommand);
+					PROCESSOR.commands().put(cmd, customCommand);
 
 					//clear commands if none
 					if (customCommands.keySet().stream().noneMatch(s -> s.endsWith(":" + cmd)))
-						CommandListener.PROCESSOR.commands().remove(cmd);
+						PROCESSOR.commands().remove(cmd);
 
 					event.getChannel().sendMessage(
 						EmoteReference.CORRECT + "Renamed command ``" + cmd + "`` to ``" + value + "``!").queue();
@@ -455,30 +460,32 @@ public class CustomCmds {
 						return;
 					}
 
-					if (CommandListener.PROCESSOR.commands().containsKey(cmd) && !CommandListener.PROCESSOR.commands()
-						.get(cmd).equals(customCommand)) {
+					if (PROCESSOR.commands().containsKey(cmd) && PROCESSOR.commands().get(cmd) != customCommand) {
 						event.getChannel().sendMessage(
 							EmoteReference.ERROR + "A command already exists with this name!").queue();
 						return;
 					}
 
-					OldCustomCommand custom = OldCustomCommand.of(
-						event.getGuild().getId(), cmd, Collections.singletonList(value));
+					CustomCommand custom;
 
 					if (action.equals("add")) {
-						OldCustomCommand c = db().getCustomCommand(event, cmd);
-
-						if (c != null) custom.getValues().addAll(c.getValues());
+						CustomCommand c = db().getCustomCommand(event, cmd);
+						custom = c != null ? c : new CustomCommand(cmd, event.getGuild().getId());
+					} else {
+						custom = new CustomCommand(cmd, event.getGuild().getId());
 					}
+
+					custom.values().add(value);
+					custom.getAuthors().add(event.getAuthor().getId());
 
 					//save at DB
 					custom.saveAsync();
 
 					//reflect at local
-					customCommands.put(custom.getId(), custom.getValues());
+					customCommands.put(custom.getId(), custom.values());
 
 					//add mini-hack
-					CommandListener.PROCESSOR.commands().put(cmd, customCommand);
+					PROCESSOR.commands().put(cmd, customCommand);
 
 					event.getChannel().sendMessage(EmoteReference.CORRECT + "Saved to command ``" + cmd + "``!")
 						.queue();
@@ -520,26 +527,25 @@ public class CustomCmds {
 	@Subscribe
 	public static void onPostLoad(PostLoadEvent e) {
 		db().getCustomCommands().forEach(custom -> {
-			if (!NAME_PATTERN.matcher(custom.getName()).matches()) {
-				String newName = INVALID_CHARACTERS_PATTERN.matcher(custom.getName()).replaceAll("_");
-				log.info("Custom Command with Invalid Characters '%s' found. Replacing with '%'", custom.getName());
+			if (!NAME_PATTERN.matcher(custom.getCommandName()).matches()) {
+				String newName = INVALID_CHARACTERS_PATTERN.matcher(custom.getCommandName()).replaceAll("_");
+				log.info("Custom Command with Invalid Characters '%s' found. Replacing with '%'", custom.getCommandName());
 
 				custom.deleteAsync();
-				custom = OldCustomCommand.of(custom.getGuildId(), newName, custom.getValues());
+				custom = custom.rename(newName);
 				custom.saveAsync();
 			}
 
-			if (CommandListener.PROCESSOR.commands().containsKey(custom.getName()) && !CommandListener.PROCESSOR
-				.commands().get(custom.getName()).equals(customCommand)) {
+			if (PROCESSOR.commands().containsKey(custom.getCommandName()) && PROCESSOR.commands().get(custom.getCommandName()) != customCommand) {
 				custom.deleteAsync();
-				custom = OldCustomCommand.of(custom.getGuildId(), "_" + custom.getName(), custom.getValues());
+				custom = custom.rename("_" + custom.getCommandName());
 				custom.saveAsync();
 			}
 
 			//add mini-hack
-			CommandListener.PROCESSOR.commands().put(custom.getName(), customCommand);
+			PROCESSOR.commands().put(custom.getCommandName(), customCommand);
 
-			customCommands.put(custom.getId(), custom.getValues());
+			customCommands.put(custom.getId(), custom.values());
 		});
 	}
 }

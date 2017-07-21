@@ -15,7 +15,8 @@ import net.kodehawa.mantarobot.commands.currency.item.Items;
 import net.kodehawa.mantarobot.core.listeners.operations.old.InteractiveOperationListener;
 import net.kodehawa.mantarobot.core.listeners.operations.old.InteractiveOperations;
 import net.kodehawa.mantarobot.data.MantaroData;
-import net.kodehawa.dataporter.oldentities.OldPlayer;
+import net.kodehawa.mantarobot.db.entities.Marriage;
+import net.kodehawa.mantarobot.db.entities.UserData;
 import net.kodehawa.mantarobot.modules.CommandRegistry;
 import net.kodehawa.mantarobot.modules.Module;
 import net.kodehawa.mantarobot.modules.commands.SimpleCommand;
@@ -34,6 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static com.rethinkdb.RethinkDB.r;
+import static java.lang.System.currentTimeMillis;
 
 /**
  * Basically part of CurrencyCmds, but only the money commands.
@@ -59,7 +61,7 @@ public class MoneyCmds {
                 catch (IndexOutOfBoundsException ignored) {
                 }
 
-                OldPlayer player = mentionedUser != null ? MantaroData.db().getPlayer(event.getGuild().getMember(mentionedUser)) : MantaroData.db().getPlayer(event.getMember());
+                UserData player = mentionedUser != null ? MantaroData.db().getUser(event.getGuild().getMember(mentionedUser)) : MantaroData.db().getUser(event.getMember());
 
                 if(player.isLocked()) {
                     event.getChannel().sendMessage(EmoteReference.ERROR + (mentionedUser != null ? "That user cannot receive daily credits now." : "You cannot get daily credits now.")).queue();
@@ -77,14 +79,15 @@ public class MoneyCmds {
                 if (mentionedUser != null && !mentionedUser.getId().equals(event.getAuthor().getId())) {
                     money = money + r.nextInt(2);
 
-                    if (player.getInventory().containsItem(Items.COMPANION)) money = Math.round(money + (money * 0.10));
+                    if (player.inventory().containsItem(Items.COMPANION)) money = Math.round(money + (money * 0.10));
 
-                    if (mentionedUser.getId().equals(player.getData().getMarriedWith()) && player.getData().getMarriedSince() != null &&
-                            Long.parseLong(player.getData().anniversary()) - player.getData().getMarriedSince() > TimeUnit.DAYS.toMillis(1))
-                    {
+                    Marriage marriage = player.getMarriage();
+                    User userMarriedWith = marriage == null ? null : MantaroBot.getInstance().getUserById(marriage.marriedWith(player.getId()));
+
+                    if (marriage != null && mentionedUser.getId().equals(userMarriedWith.getId()) && marriage.getSince() > (currentTimeMillis() + 86400000)) {
                         money = money + r.nextInt(20);
 
-                        if (player.getInventory().containsItem(Items.RING_2)) {
+                        if (player.inventory().containsItem(Items.RING_2)) {
                             money = money + r.nextInt(10);
                         }
                     }
@@ -120,7 +123,7 @@ public class MoneyCmds {
             @Override
             public void call(GuildMessageReceivedEvent event, String content, String[] args) {
                 String id = event.getAuthor().getId();
-                OldPlayer player = MantaroData.db().getPlayer(event.getMember());
+                UserData player = MantaroData.db().getUser(event.getMember());
 
                 if (!rateLimiter.process(id)) {
                     event.getChannel().sendMessage(EmoteReference.STOPWATCH +
@@ -186,7 +189,7 @@ public class MoneyCmds {
 
                 player.setLocked(true);
 
-                if (i >= Integer.MAX_VALUE / 4) {
+                if (i >= 0x1fffffff) {
                     event.getChannel().sendMessage(EmoteReference.WARNING + "You're about to bet **" + i + "** " +
                             "credits (which seems to be a lot). Are you sure? Type **yes** to continue and **no** otherwise.").queue();
                     InteractiveOperations.create(event.getChannel(), 30, new InteractiveOperationListener() {
@@ -242,7 +245,7 @@ public class MoneyCmds {
             @Override
             public void call(GuildMessageReceivedEvent event, String content, String[] args) {
                 String id = event.getAuthor().getId();
-                OldPlayer player = MantaroData.db().getPlayer(event.getMember());
+                UserData player = MantaroData.db().getUser(event.getMember());
 
                 if(player.isLocked()) {
                     event.getChannel().sendMessage(EmoteReference.ERROR + "You cannot loot now.").queue();
@@ -275,7 +278,7 @@ public class MoneyCmds {
                 if (!loot.isEmpty()) {
                     String s = ItemStack.toString(ItemStack.reduce(loot));
                     String overflow;
-                    if(player.getInventory().merge(loot)) {
+                    if(player.inventory().merge(loot)) {
                         overflow = "But you already had too many items, so you decided to throw away the excess. ";
                     } else {
                         overflow = "";
@@ -435,7 +438,7 @@ public class MoneyCmds {
         cr.registerAlias("leaderboard", "richest");
     }
 
-    private static void proceedGamble(GuildMessageReceivedEvent event, OldPlayer player, int luck, Random r, long i, long gains) {
+    private static void proceedGamble(GuildMessageReceivedEvent event, UserData player, int luck, Random r, long i, long gains) {
         if (luck > r.nextInt(110)) {
             if (player.addMoney(gains)) {
                 event.getChannel().sendMessage(EmoteReference.DICE + "Congrats, you won " + gains + " credits and got to keep what you " +

@@ -32,7 +32,8 @@ import net.kodehawa.mantarobot.core.LoadState;
 import net.kodehawa.mantarobot.core.ShardMonitorEvent;
 import net.kodehawa.mantarobot.core.listeners.command.CommandListener;
 import net.kodehawa.mantarobot.data.MantaroData;
-import net.kodehawa.dataporter.oldentities.OldGuild;
+import net.kodehawa.mantarobot.db.entities.GuildData;
+import net.kodehawa.mantarobot.db.entities.Marriage;
 import net.kodehawa.mantarobot.db.entities.helpers.ExtraGuildData;
 import net.kodehawa.mantarobot.db.entities.helpers.ExtraUserData;
 import net.kodehawa.mantarobot.log.LogUtils;
@@ -44,8 +45,11 @@ import net.kodehawa.mantarobot.utils.data.GsonDataManager;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static net.kodehawa.mantarobot.commands.custom.Mapifier.dynamicResolve;
 import static net.kodehawa.mantarobot.commands.custom.Mapifier.map;
@@ -56,6 +60,32 @@ public class MantaroListener implements EventListener {
 		"(?:discord(?:(?:\\.|.?dot.?)gg|app(?:\\.|.?dot.?)com/invite)/(?<id>" +
 			"([\\w]{10,16}|[a-zA-Z0-9]{4,8})))");
 	private static int logTotal = 0;
+	private static final BlockingQueue<User> outOfSightProcessing = new LinkedBlockingQueue<>();
+
+	static {
+	    Async.thread("Out-of-sight User Processing", () -> {
+            //noinspection InfiniteLoopStatement
+            while (true) {
+               try {
+                   User user = outOfSightProcessing.take();
+
+                   //Use the MantaroBot#getMutualGuilds so it's a search on all shards
+                   if (!MantaroBot.getInstance().getMutualGuilds(user).isEmpty()) return;
+
+                   //User got out of sight
+
+                   //Check Marriage
+                   Marriage marriage = MantaroData.db().getMarriage(user.getId());
+                   if (marriage != null) {
+                       marriage.delete();
+                   }
+
+               } catch (InterruptedException e) {
+                   throw new RuntimeException(e);
+               }
+           }
+        });
+    }
 
 	public static String getLogTotal() {
 		return String.valueOf(logTotal);
@@ -289,7 +319,8 @@ public class MantaroListener implements EventListener {
 	}
 
 	//region minn
-	private void onDisconnect(DisconnectEvent event) {
+
+    private void onDisconnect(DisconnectEvent event) {
 		if (event.isClosedByServer()) {
 			log.warn(String.format("---- DISCONNECT [SERVER] CODE: [%d] %s%n",
 				event.getServiceCloseFrame().getCloseCode(), event.getCloseCode()
@@ -305,7 +336,9 @@ public class MantaroListener implements EventListener {
 		if (!event.isLogged()){
 			SentryHelper.captureException("Exception captured in un-logged trace", event.getCause(), this.getClass());
 		};
-	} //endregion
+	}
+
+	//endregion
 
 	private void onJoin(GuildJoinEvent event) {
 		try {
@@ -328,6 +361,8 @@ public class MantaroListener implements EventListener {
 
 	private void onLeave(GuildLeaveEvent event) {
 		try {
+		    outOfSightProcessing.addAll(event.getGuild().getMembers().stream().map(Member::getUser).collect(Collectors.toList()));
+
 			MantaroBot.getInstance().getStatsClient().increment("guild_leave");
 			MantaroBot.getInstance().getAudioManager().getMusicManagers().remove(event.getGuild().getId());
 			GuildStatsManager.log(LoggedEvent.LEAVE);
@@ -340,7 +375,7 @@ public class MantaroListener implements EventListener {
 
 	private void onMessage(GuildMessageReceivedEvent event) {
 		//Moderation features
-		OldGuild dbGuild = MantaroData.db().getGuild(event.getGuild());
+		GuildData dbGuild = MantaroData.db().getGuild(event.getGuild());
 		ExtraGuildData guildData = dbGuild.getData();
 
 		//un-mute check
@@ -461,7 +496,7 @@ public class MantaroListener implements EventListener {
 	private void onUserJoin(GuildMemberJoinEvent event) {
 		try {
 			String role = MantaroData.db().getGuild(event.getGuild()).getData().getGuildAutoRole();
-			OldGuild dbg = MantaroData.db().getGuild(event.getGuild());
+			GuildData dbg = MantaroData.db().getGuild(event.getGuild());
 			ExtraGuildData data = dbg.getData();
 
 			String hour = df.format(new Date(System.currentTimeMillis()));
@@ -522,10 +557,10 @@ public class MantaroListener implements EventListener {
 
 	private void onUserLeave(GuildMemberLeaveEvent event) {
 		try {
-
+            outOfSightProcessing.offer(event.getUser());
 
 			String hour = df.format(new Date(System.currentTimeMillis()));
-			OldGuild dbg = MantaroData.db().getGuild(event.getGuild());
+			GuildData dbg = MantaroData.db().getGuild(event.getGuild());
 			ExtraGuildData data = dbg.getData();
 
 
@@ -574,7 +609,7 @@ public class MantaroListener implements EventListener {
 	}
 
 	private void resetBirthdays(Guild guild) {
-		OldGuild data = MantaroData.db().getGuild(guild);
+		GuildData data = MantaroData.db().getGuild(guild);
 		data.getData().setBirthdayChannel(null);
 		data.getData().setBirthdayRole(null);
 		data.save();

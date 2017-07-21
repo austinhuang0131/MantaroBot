@@ -9,7 +9,7 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.kodehawa.mantarobot.commands.moderation.ModLog;
 import net.kodehawa.mantarobot.data.MantaroData;
 import net.kodehawa.mantarobot.db.ManagedDatabase;
-import net.kodehawa.dataporter.oldentities.OldGuild;
+import net.kodehawa.mantarobot.db.entities.GuildData;
 import net.kodehawa.mantarobot.db.entities.helpers.ExtraGuildData;
 import net.kodehawa.mantarobot.modules.CommandRegistry;
 import net.kodehawa.mantarobot.modules.Module;
@@ -36,7 +36,7 @@ public class MuteCmds {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
                 ManagedDatabase db = MantaroData.db();
-                OldGuild dbGuild = db.getGuild(event.getGuild());
+                GuildData dbGuild = db.getGuild(event.getGuild());
                 ExtraGuildData guildData = dbGuild.getData();
                 String reason = "Not specified";
                 Map<String, Optional<String>> opts = br.com.brjdevs.java.utils.texts.StringUtils.parse(args);
@@ -101,7 +101,7 @@ public class MuteCmds {
                         return;
                     }
 
-                    final OldGuild dbg = db.getGuild(event.getGuild());
+                    final GuildData dbg = db.getGuild(event.getGuild());
                     event.getGuild().getController().addRolesToMember(m, mutedRole).queue();
                     event.getChannel().sendMessage(EmoteReference.CORRECT + "Added mute role to **" +
                             m.getEffectiveName() + (time > 0 ? "** for around " + Utils.getVerboseTime(time - System.currentTimeMillis()) : "**")).queue();
@@ -140,7 +140,7 @@ public class MuteCmds {
                     }
 
                     long timeoutToSet = Utils.parseTime(args[0]);
-                    OldGuild dbGuild = MantaroData.db().getGuild(event.getGuild());
+                    GuildData dbGuild = MantaroData.db().getGuild(event.getGuild());
                     ExtraGuildData guildData = dbGuild.getData();
                     guildData.setSetModTimeout(timeoutToSet);
                     dbGuild.save();
@@ -150,7 +150,7 @@ public class MuteCmds {
                 .addOption("defaultmutetimeout:reset", new Option("Default mute timeout reset",
                         "Resets the default mute timeout which was set previously with `defaultmusictimeout set`", OptionType.GUILD)
                         .setAction((event -> {
-                            OldGuild dbGuild = MantaroData.db().getGuild(event.getGuild());
+                            GuildData dbGuild = MantaroData.db().getGuild(event.getGuild());
                             ExtraGuildData guildData = dbGuild.getData();
 
                             guildData.setSetModTimeout(0L);
@@ -169,7 +169,7 @@ public class MuteCmds {
                             }
 
                             String roleName = String.join(" ", args);
-                            OldGuild dbGuild = MantaroData.db().getGuild(event.getGuild());
+                            GuildData dbGuild = MantaroData.db().getGuild(event.getGuild());
                             ExtraGuildData guildData = dbGuild.getData();
 
                             List<Role> roleList = event.getGuild().getRolesByName(roleName, true);
@@ -193,7 +193,7 @@ public class MuteCmds {
                         }).setShortDescription("Sets this guilds mute role to apply on the ~>mute command"))
                 .addOption("muterole:unbind", new Option("Mute Role unbind", "Resets the current value set for the mute role", OptionType.GENERAL)
                         .setAction(event -> {
-                            OldGuild dbGuild = MantaroData.db().getGuild(event.getGuild());
+                            GuildData dbGuild = MantaroData.db().getGuild(event.getGuild());
                             ExtraGuildData guildData = dbGuild.getData();
                             guildData.setMutedRole(null);
                             dbGuild.saveAsync();
@@ -207,7 +207,7 @@ public class MuteCmds {
             @Override
             protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
                 ManagedDatabase db = MantaroData.db();
-                OldGuild dbGuild = db.getGuild(event.getGuild());
+                GuildData dbGuild = db.getGuild(event.getGuild());
                 ExtraGuildData guildData = dbGuild.getData();
                 String reason = "Not specified";
 
@@ -233,7 +233,7 @@ public class MuteCmds {
                 }
 
                 final String finalReason = reason;
-                final OldGuild dbg = db.getGuild(event.getGuild());
+                final GuildData dbg = db.getGuild(event.getGuild());
 
                 event.getMessage().getMentionedUsers().forEach(user -> {
                     Member m = event.getGuild().getMember(user);

@@ -9,7 +9,7 @@ import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.events.Event;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.EventListener;
-import net.kodehawa.dataporter.oldentities.OldPlayer;
+import net.kodehawa.mantarobot.db.entities.UserData;
 import net.kodehawa.mantarobot.MantaroBot;
 import net.kodehawa.mantarobot.core.CommandProcessorAndRegistry;
 import net.kodehawa.mantarobot.core.ShardMonitorEvent;
@@ -61,13 +61,13 @@ public class CommandListener implements EventListener {
 
 			if (random.nextInt(15) > 10) {
 				if (event.getMember() == null) return;
-				OldPlayer player = MantaroData.db().getPlayer(event.getMember());
+				UserData player = MantaroData.db().getPlayer(event.getMember());
 				if(event.getMember().getUser().isBot()) return;
 				if (player != null) {
 					if (player.getLevel() == 0) player.setLevel(1);
-					player.getData().setExperience(player.getData().getExperience() + Math.round(random.nextInt(6)));
+					player.setXp(player.getXp() + Math.round(random.nextInt(6)));
 
-					if (player.getData().getExperience() > (player.getLevel() * Math.log10(player.getLevel()) * 1000)) {
+					if (player.getXp() > (player.getLevel() * Math.log10(player.getLevel()) * 1000)) {
 						player.setLevel(player.getLevel() + 1);
 					}
 

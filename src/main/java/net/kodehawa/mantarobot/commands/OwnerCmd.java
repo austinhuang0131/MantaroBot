@@ -11,9 +11,9 @@ import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.kodehawa.mantarobot.MantaroBot;
 import net.kodehawa.mantarobot.data.MantaroData;
-import net.kodehawa.dataporter.oldentities.OldGuild;
-import net.kodehawa.dataporter.oldentities.OldUser;
-import net.kodehawa.dataporter.oldentities.OldMantaroObj;
+import net.kodehawa.mantarobot.db.entities.GuildData;
+import net.kodehawa.mantarobot.db.entities.MantaroObject;
+import net.kodehawa.mantarobot.db.entities.UserData;
 import net.kodehawa.mantarobot.log.LogUtils;
 import net.kodehawa.mantarobot.modules.CommandRegistry;
 import net.kodehawa.mantarobot.modules.Module;
@@ -29,12 +29,11 @@ import org.json.JSONObject;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
-import java.awt.*;
+import java.awt.Color;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -61,7 +60,7 @@ public class OwnerCmd {
 		cr.register("blacklist", new SimpleCommand(Category.OWNER, CommandPermission.OWNER) {
 			@Override
 			protected void call(GuildMessageReceivedEvent event, String content, String[] args) {
-				OldMantaroObj obj = MantaroData.db().getMantaroData();
+				MantaroObject obj = MantaroData.db().getMantaroData();
 				if (args[0].equals("guild")) {
 					if (args[1].equals("add")) {
 						if (MantaroBot.getInstance().getGuildById(args[2]) == null) return;
@@ -278,7 +277,7 @@ public class OwnerCmd {
 									return;
 								}
 							}
-							OldUser db = MantaroData.db().getUser(userId);
+							UserData db = MantaroData.db().getUser(userId);
 							db.incrementPremium(TimeUnit.DAYS.toMillis(Long.parseLong(values[2])));
 							db.saveAsync();
 							event.getChannel().sendMessage(EmoteReference.CORRECT +
@@ -296,7 +295,7 @@ public class OwnerCmd {
 					if (sub.equals("guild")) {
 						try {
 							String[] values = SPLIT_PATTERN.split(args[1], 3);
-							OldGuild db = MantaroData.db().getGuild(values[1]);
+							GuildData db = MantaroData.db().getGuild(values[1]);
 							db.incrementPremium(TimeUnit.DAYS.toMillis(Long.parseLong(values[2])));
 							db.saveAsync();
 							event.getChannel().sendMessage(EmoteReference.CORRECT +

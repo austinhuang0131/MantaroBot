@@ -9,7 +9,7 @@ import net.kodehawa.mantarobot.commands.game.Character;
 import net.kodehawa.mantarobot.commands.game.Pokemon;
 import net.kodehawa.mantarobot.commands.game.Trivia;
 import net.kodehawa.mantarobot.commands.interaction.Lobby;
-import net.kodehawa.dataporter.oldentities.OldPlayer;
+import net.kodehawa.mantarobot.db.entities.UserData;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -35,9 +35,9 @@ public class GameLobby extends Lobby {
 	@Getter
 	Guild guild;
 	@Getter
-	HashMap<Member, OldPlayer> players;
+	HashMap<Member, UserData> players;
 
-	public GameLobby(GuildMessageReceivedEvent event, HashMap<Member, OldPlayer> players, LinkedList<Game> games) {
+	public GameLobby(GuildMessageReceivedEvent event, HashMap<Member, UserData> players, LinkedList<Game> games) {
 		super(event.getChannel());
 		this.guild = event.getGuild();
 		this.event = event;
